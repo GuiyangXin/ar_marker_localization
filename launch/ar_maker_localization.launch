@@ -1,0 +1,31 @@
+<?xml version="1.0" ?> 
+<launch>
+
+	<arg name="user_marker_size"	  default="3.0"/>
+	<arg name="camera_namespace" default="camera"/>
+	<arg name="marker_frame_id"     default="camera_link"/>
+	<arg name="filters"     default="pointcloud"/>
+    <!-- camera tf Node-->
+
+    <!--node name="camera_tf_broadcaster" pkg="ar_marker_localization" type="camera_tf_broadcaster.py" respawn="false" output="screen" >
+      <param name="camera" type="string" value="realsense" />
+    </node-->
+	<node pkg="tf" type="static_transform_publisher" name="camera_frame_to_astra_pro_frame" args="0.0 0.0 0.0 0.0 0.0 0.0 world camera_link 10" />
+	
+	<include file="$(find ar_track_alvar)/launch/pr2_indiv_no_kinect.launch">
+        	<arg name="marker_size" value="$(arg user_marker_size)" />
+        	<arg name="max_new_marker_error" value="0.08" />
+        	<arg name="max_track_error" value="0.2" />
+        	<arg name="cam_image_topic" value="$(arg camera_namespace)/color/image_raw" />
+        	<arg name="cam_info_topic" value="$(arg camera_namespace)/color/camera_info" />
+        	<arg name="output_frame" value="$(arg marker_frame_id)" />
+	</include>
+
+	<node pkg="ar_marker_localization" type="camera_tf_listener.py" name="listener" respawn="false" output="screen"/>
+
+	<include file="$(find realsense2_camera)/launch/rs_camera.launch">
+        	<arg name="filters" value="$(arg filters)" />
+	</include>
+
+	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find ar_marker_localization)/rviz/default.rviz" />
+</launch>
