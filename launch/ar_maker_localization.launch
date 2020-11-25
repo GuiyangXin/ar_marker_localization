@@ -21,7 +21,7 @@
         	<arg name="output_frame" value="$(arg marker_frame_id)" />
 	</include>
 
-	<node pkg="ar_marker_localization" type="camera_tf_listener.py" name="listener" respawn="false" output="screen"/>
+	<node pkg="ar_marker_localization" type="camera_tf.py" name="camera_tf" respawn="false" output="screen"/>
 
 	<include file="$(find realsense2_camera)/launch/rs_camera.launch">
         	<arg name="filters" value="$(arg filters)" />

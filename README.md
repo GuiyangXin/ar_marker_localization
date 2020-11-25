@@ -23,8 +23,9 @@ cd catkin_ws/src
 git clone git@github.com:GuiyangXin/ar_marker_localization.git
 cd ..
 catkin_make
+source devel/setup.bash
 roslaunch ar_marker_localization ar_maker_localization.launch
 ```
-
+The coordinate transformation from camera_link frame to marker frame is published on ros topic `/camera2markerTransformation`
 
 
