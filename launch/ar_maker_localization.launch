@@ -3,14 +3,14 @@
 
 	<arg name="user_marker_size"	  default="3.0"/>
 	<arg name="camera_namespace" default="camera"/>
-	<arg name="marker_frame_id"     default="camera_link"/>
+	<arg name="marker_frame_id"     default="base_link"/>
 	<arg name="filters"     default="pointcloud"/>
     <!-- camera tf Node-->
 
     <!--node name="camera_tf_broadcaster" pkg="ar_marker_localization" type="camera_tf_broadcaster.py" respawn="false" output="screen" >
       <param name="camera" type="string" value="realsense" />
     </node-->
-	<node pkg="tf" type="static_transform_publisher" name="camera_frame_to_astra_pro_frame" args="0.0 0.0 0.0 0.0 0.0 0.0 world camera_link 10" />
+	<node pkg="tf" type="static_transform_publisher" name="camera_frame_to_camera_physical_base_frame" args="0.011 0.018 0.013 0.0 0.0 0.0 base_link camera_link 10" />
 	
 	<include file="$(find ar_track_alvar)/launch/pr2_indiv_no_kinect.launch">
         	<arg name="marker_size" value="$(arg user_marker_size)" />
@@ -28,4 +28,7 @@
 	</include>
 
 	<node name="rviz" pkg="rviz" type="rviz" args="-d $(find ar_marker_localization)/rviz/default.rviz" />
+
+	<param name="robot_description" command="$(find xacro)/xacro --inorder '$(find realsense2_description)/urdf/test_d435_camera.urdf.xacro' use_nominal_extrinsics:=true" />
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 </launch>
