@@ -8,7 +8,7 @@ Contact  : Guiyang Xin [guiyang.xin ( at ) ed.ac.uk]
 Author(s): Guiyang Xin
 
 Date     : 25/11/2020
-
+![Camera in Rviz](doc/coverPhoto.png?raw=true "Camera in Rviz")
 ## Build status
 
 DEPENDENCIES
@@ -26,6 +26,6 @@ catkin_make
 source devel/setup.bash
 roslaunch ar_marker_localization ar_maker_localization.launch
 ```
-The coordinate transformation from camera_link frame to marker frame is published on ros topic `/camera2markerTransformation`
+The coordinate transformation from base_link frame (camera's base is the centre of the screw circle) to marker frame is published on ros topic `/camera2markerTransformation`
 
 

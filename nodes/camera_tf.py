@@ -19,7 +19,7 @@ def talker(trans1, rot1):
     T.orientation.z = rot1[2]
     T.orientation.w = rot1[3]
 
-    rospy.loginfo(T)
+    # rospy.loginfo(T)
     pub.publish(T)
     # rate.sleep()
 
