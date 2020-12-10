@@ -3,6 +3,28 @@
 #include <geometry_msgs/Twist.h>
 #define Num 20
 
+void computeVariance(double & var, double x, double * array) {
+	for (int i = 0; i < Num; i++) {
+		if (i == Num - 1) {
+			array[i] = x;
+		} else {
+			array[i] = array[i + 1];
+		}
+
+	}
+	double sum = 0;
+	for (int i = 0; i < Num; i++) {
+		sum += array[i];
+	}
+	double average = 0;
+	average = sum / Num;
+	for (int i = 0; i < Num; i++) {
+		var += (array[i] - average) * (array[i] - average);
+	}
+	var /= Num;
+	var = sqrt(var);
+}
+
 int main(int argc, char** argv) {
 	ros::init(argc, argv, "my_tf_listener");
 
@@ -37,8 +59,12 @@ int main(int argc, char** argv) {
 	double average = 0;
 	bool flag = false;
 	bool flag2 = false;
+	bool flag_pub0=false;
+	bool flag_pub1=false;
+	bool flag_pub2=false;
+	bool flag_pub3=false;
 
-	ros::Rate rate(100.0);
+	ros::Rate rate(10.0);
 	while (node.ok()) {
 
 		listener.getFrameStrings(frames);
@@ -101,122 +127,154 @@ int main(int argc, char** argv) {
 					}
 
 					//compute the transformation
-					for (int i = 0; i < Num; i++) {
-						if (i == Num - 1) {
-							cache0To8[i] = transform0To8.getOrigin().getX();
-						} else {
-							cache0To8[i] = cache0To8[i + 1];
-						}
+					computeVariance(variance0To8,
+							transform0To8.getOrigin().getX(), cache0To8);
+					computeVariance(variance1To8,
+							transform1To8.getOrigin().getX(), cache1To8);
+					computeVariance(variance2To8,
+							transform2To8.getOrigin().getX(), cache2To8);
+					computeVariance(variance3To8,
+							transform3To8.getOrigin().getX(), cache3To8);
+//					for (int i = 0; i < Num; i++) {
+//						if (i == Num - 1) {
+//							cache0To8[i] = transform0To8.getOrigin().getX();
+//						} else {
+//							cache0To8[i] = cache0To8[i + 1];
+//						}
+//
+//					}
+//					sum = 0;
+//					for (int i = 0; i < Num; i++) {
+//						sum += cache0To8[i];
+//					}
+//					average = 0;
+//					average = sum / Num;
+//					for (int i = 0; i < Num; i++) {
+//						variance0To8 += (cache0To8[i] - average)
+//								* (cache0To8[i] - average);
+//					}
+//					variance0To8 /= Num;
+//					if (variance0To8 == 0) {
+//						ROS_ERROR("We lost marker_0 or marker_8!");
+//					}
+//
+//					for (int i = 0; i < Num; i++) {
+//						if (i == Num - 1) {
+//							cache1To8[i] = transform1To8.getOrigin().getX();
+//						} else {
+//							cache1To8[i] = cache1To8[i + 1];
+//						}
+//					}
+//					sum = 0;
+//					for (int i = 0; i < Num; i++) {
+//						sum += cache1To8[i];
+//					}
+//					average = 0;
+//					average = sum / Num;
+//					for (int i = 0; i < Num; i++) {
+//						variance1To8 += (cache1To8[i] - average)
+//								* (cache1To8[i] - average);
+//					}
+//					variance1To8 /= Num;
+//					if (variance1To8 == 0) {
+//						ROS_ERROR("We lost marker_1 or marker_8!");
+//					}
+//
+//					for (int i = 0; i < Num; i++) {
+//						if (i == Num - 1) {
+//							cache2To8[i] = transform2To8.getOrigin().getX();
+//						} else {
+//							cache2To8[i] = cache2To8[i + 1];
+//						}
+//					}
+//					sum = 0;
+//					for (int i = 0; i < Num; i++) {
+//						sum += cache2To8[i];
+//					}
+//					average = 0;
+//					average = sum / Num;
+//					for (int i = 0; i < Num; i++) {
+//						variance2To8 += (cache2To8[i] - average)
+//								* (cache2To8[i] - average);
+//					}
+//					variance2To8 /= Num;
+//					if (variance2To8 == 0) {
+//						ROS_ERROR("We lost marker_2 or marker_8!");
+//					}
+//
+//					for (int i = 0; i < Num; i++) {
+//						if (i == Num - 1) {
+//							cache3To8[i] = transform3To8.getOrigin().getX();
+//						} else {
+//							cache3To8[i] = cache3To8[i + 1];
+//						}
+//					}
+//					sum = 0;
+//					for (int i = 0; i < Num; i++) {
+//						sum += cache3To8[i];
+//					}
+//					average = 0;
+//					average = sum / Num;
+//					for (int i = 0; i < Num; i++) {
+//						variance3To8 += (cache3To8[i] - average)
+//								* (cache3To8[i] - average);
+//					}
+//					variance3To8 /= Num;
+//					if (variance3To8 == 0) {
+//						ROS_ERROR("We lost marker_3 or marker_8!");
+//					}
 
-					}
-					sum = 0;
-					for (int i = 0; i < Num; i++) {
-						sum += cache0To8[i];
-					}
-					average = 0;
-					average = sum / Num;
-					for (int i = 0; i < Num; i++) {
-						variance0To8 += (cache0To8[i] - average)
-								* (cache0To8[i] - average);
-					}
-					variance0To8 /= Num;
-					if (variance0To8 == 0) {
-						ROS_ERROR("We lost marker_0 or marker_8!");
-					}
-
-					for (int i = 0; i < Num; i++) {
-						if (i == Num - 1) {
-							cache1To8[i] = transform1To8.getOrigin().getX();
-						} else {
-							cache1To8[i] = cache1To8[i + 1];
-						}
-					}
-					sum = 0;
-					for (int i = 0; i < Num; i++) {
-						sum += cache1To8[i];
-					}
-					average = 0;
-					average = sum / Num;
-					for (int i = 0; i < Num; i++) {
-						variance1To8 += (cache1To8[i] - average)
-								* (cache1To8[i] - average);
-					}
-					variance1To8 /= Num;
-					if (variance1To8 == 0) {
-						ROS_ERROR("We lost marker_1 or marker_8!");
-					}
-
-					for (int i = 0; i < Num; i++) {
-						if (i == Num - 1) {
-							cache2To8[i] = transform2To8.getOrigin().getX();
-						} else {
-							cache2To8[i] = cache2To8[i + 1];
-						}
-					}
-					sum = 0;
-					for (int i = 0; i < Num; i++) {
-						sum += cache2To8[i];
-					}
-					average = 0;
-					average = sum / Num;
-					for (int i = 0; i < Num; i++) {
-						variance2To8 += (cache2To8[i] - average)
-								* (cache2To8[i] - average);
-					}
-					variance2To8 /= Num;
-					if (variance2To8 == 0) {
-						ROS_ERROR("We lost marker_2 or marker_8!");
-					}
-
-					for (int i = 0; i < Num; i++) {
-						if (i == Num - 1) {
-							cache3To8[i] = transform3To8.getOrigin().getX();
-						} else {
-							cache3To8[i] = cache3To8[i + 1];
-						}
-					}
-					sum = 0;
-					for (int i = 0; i < Num; i++) {
-						sum += cache3To8[i];
-					}
-					average = 0;
-					average = sum / Num;
-					for (int i = 0; i < Num; i++) {
-						variance3To8 += (cache3To8[i] - average)
-								* (cache3To8[i] - average);
-					}
-					variance3To8 /= Num;
-					if (variance3To8 == 0) {
-						ROS_ERROR("We lost marker_3 or marker_8!");
-					}
-
-					if (variance0To8 == 0 && variance1To8 == 0
-							&& variance2To8 == 0 && variance3To8 == 0) {
+					if (variance0To8 == 0.05 && variance1To8 == 0.05
+							&& variance2To8 == 0.05 && variance3To8 == 0.05) {
 						ROS_ERROR("We lost all the  markers!");
 						continue;
 					}
-					if (variance0To8 != 0) {
+					if (variance0To8 == 0.05 || variance0To8 == 0) {
+						ROS_ERROR("We lost marker_0 or marker_8!");
+						flag_pub0=false;
+					} else {
+						flag_pub0=true;
 						std::cout
 								<< "The transformation from marker_0 to marker_8: "
 								<< transform0To8.getOrigin().getX()
 								<< std::endl;
+						std::cout << "variance0To8: " << variance0To8
+								<< std::endl;
 					}
-					if (variance1To8 != 0) {
+					if (variance1To8 == 0.05 || variance1To8 == 0) {
+						ROS_ERROR("We lost marker_1 or marker_8!");
+						flag_pub1=false;
+					} else {
+						flag_pub1=true;
 						std::cout
 								<< "The transformation from marker_1 to marker_8: "
 								<< transform1To8.getOrigin().getX()
 								<< std::endl;
+						std::cout << "variance1To8: " << variance1To8
+								<< std::endl;
 					}
-					if (variance2To8 != 0) {
+					if (variance2To8 == 0.05 || variance2To8 == 0) {
+						ROS_ERROR("We lost marker_2 or marker_8!");
+						flag_pub2=false;
+					} else {
+						flag_pub2=true;
 						std::cout
 								<< "The transformation from marker_2 to marker_8: "
 								<< transform2To8.getOrigin().getX()
 								<< std::endl;
+						std::cout << "variance2To8: " << variance2To8
+								<< std::endl;
 					}
-					if (variance3To8 != 0) {
+					if (variance3To8 == 0.05 || variance3To8 == 0) {
+						ROS_ERROR("We lost marker_3 or marker_8!");
+						flag_pub3=false;
+					} else {
+						flag_pub3=true;
 						std::cout
 								<< "The transformation from marker_3 to marker_8: "
 								<< transform3To8.getOrigin().getX()
+								<< std::endl;
+						std::cout << "variance3To8: " << variance3To8
 								<< std::endl;
 					}
 
