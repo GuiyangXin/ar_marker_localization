@@ -59,10 +59,10 @@ int main(int argc, char** argv) {
 	double average = 0;
 	bool flag = false;
 	bool flag2 = false;
-	bool flag_pub0=false;
-	bool flag_pub1=false;
-	bool flag_pub2=false;
-	bool flag_pub3=false;
+	bool flag_pub0 = false;
+	bool flag_pub1 = false;
+	bool flag_pub2 = false;
+	bool flag_pub3 = false;
 	bool marker_flag0 = false;
 	bool marker_flag1 = false;
 	bool marker_flag2 = false;
@@ -84,10 +84,10 @@ int main(int argc, char** argv) {
 								listener.lookupTransform("/ar_marker_0",
 										"/ar_marker_8", ros::Time(0),
 										transform0To8);
-										marker_flag0=true;
+								marker_flag0 = true;
 							} catch (tf::TransformException &ex) {
 								ROS_WARN("%s", ex.what());
-								marker_flag0=false;
+								marker_flag0 = false;
 //								rate.sleep();
 //								continue;
 							}
@@ -97,10 +97,10 @@ int main(int argc, char** argv) {
 								listener.lookupTransform("/ar_marker_1",
 										"/ar_marker_8", ros::Time(0),
 										transform1To8);
-										marker_flag1=true;
+								marker_flag1 = true;
 							} catch (tf::TransformException &ex) {
 								ROS_WARN("%s", ex.what());
-								marker_flag1=false;
+								marker_flag1 = false;
 //								rate.sleep();
 //								continue;
 							}
@@ -110,10 +110,10 @@ int main(int argc, char** argv) {
 								listener.lookupTransform("/ar_marker_2",
 										"/ar_marker_8", ros::Time(0),
 										transform2To8);
-										marker_flag2=true;
+								marker_flag2 = true;
 							} catch (tf::TransformException &ex) {
 								ROS_WARN("%s", ex.what());
-								marker_flag2=false;
+								marker_flag2 = false;
 //								rate.sleep();
 //								continue;
 							}
@@ -123,10 +123,10 @@ int main(int argc, char** argv) {
 								listener.lookupTransform("/ar_marker_3",
 										"/ar_marker_8", ros::Time(0),
 										transform3To8);
-										marker_flag3=true;
+								marker_flag3 = true;
 							} catch (tf::TransformException &ex) {
 								ROS_WARN("%s", ex.what());
-								marker_flag3=false;
+								marker_flag3 = false;
 //								rate.sleep();
 //								continue;
 							}
@@ -136,33 +136,35 @@ int main(int argc, char** argv) {
 					if (!flag2) {
 						ROS_ERROR("I cannot localise the robot!");
 						continue;
+					}else if(!marker_flag0 && !marker_flag1 && !marker_flag2 && !marker_flag3){
+						ROS_ERROR("I cannot localise the robot because I lost all the markers!");
 					}
 
 					//compute the transformation
-					if(marker_flag0){
-					computeVariance(variance0To8,
-							transform0To8.getOrigin().getX(), cache0To8);
-							}else{
-								ROS_WARN("I cannot see marker0!");
-							}
-							if(marker_flag1){
-					computeVariance(variance1To8,
-							transform1To8.getOrigin().getX(), cache1To8);
-							}else{
-								ROS_WARN("I cannot see marker1!");
-							}
-							if(marker_flag2){
-					computeVariance(variance2To8,
-							transform2To8.getOrigin().getX(), cache2To8);
-							}else{
-								ROS_WARN("I cannot see marker2!");
-							}
-							if(marker_flag3){
-					computeVariance(variance3To8,
-							transform3To8.getOrigin().getX(), cache3To8);
-							}else{
-								ROS_WARN("I cannot see marker3!");
-							}
+					if (marker_flag0) {
+						computeVariance(variance0To8,
+								transform0To8.getOrigin().getX(), cache0To8);
+					} else {
+						ROS_WARN("I cannot see marker0!");
+					}
+					if (marker_flag1) {
+						computeVariance(variance1To8,
+								transform1To8.getOrigin().getX(), cache1To8);
+					} else {
+						ROS_WARN("I cannot see marker1!");
+					}
+					if (marker_flag2) {
+						computeVariance(variance2To8,
+								transform2To8.getOrigin().getX(), cache2To8);
+					} else {
+						ROS_WARN("I cannot see marker2!");
+					}
+					if (marker_flag3) {
+						computeVariance(variance3To8,
+								transform3To8.getOrigin().getX(), cache3To8);
+					} else {
+						ROS_WARN("I cannot see marker3!");
+					}
 
 					//Publish the relative tranformation between the end-effector and the object
 					if (variance0To8 == 0.05 && variance1To8 == 0.05
@@ -170,57 +172,65 @@ int main(int argc, char** argv) {
 						ROS_ERROR("We lost all the  markers!");
 						continue;
 					}
-					if(marker_flag0){
+					if (marker_flag0) {
 						if (variance0To8 == 0.05) {
 							ROS_WARN("We lost marker_0 or marker_8!");
-							flag_pub0=false;
+							flag_pub0 = false;
 						} else {
-							flag_pub0=true;
+							flag_pub0 = true;
 							std::cout
 									<< "The transformation from marker_0 to marker_8 in marker_0 frame: [x, y, z] "
-									<< transform0To8.getOrigin().getX()<<", "<<transform0To8.getOrigin().getY()<<", "<<transform0To8.getOrigin().getZ()
+									<< transform0To8.getOrigin().getX() << ", "
+									<< transform0To8.getOrigin().getY() << ", "
+									<< transform0To8.getOrigin().getZ()
 									<< std::endl;
 							std::cout << "variance0To8: " << variance0To8
 									<< std::endl;
 						}
 					}
-					if(marker_flag1){
+					if (marker_flag1) {
 						if (variance1To8 == 0.05) {
 							ROS_WARN("We lost marker_1 or marker_8!");
-							flag_pub1=false;
+							flag_pub1 = false;
 						} else {
-							flag_pub1=true;
+							flag_pub1 = true;
 							std::cout
 									<< "The transformation from marker_1 to marker_8 in marker_1 frame: [x, y, z] "
-									<< transform1To8.getOrigin().getX()<<", "<<transform1To8.getOrigin().getY()<<", "<<transform1To8.getOrigin().getZ()
+									<< transform1To8.getOrigin().getX() << ", "
+									<< transform1To8.getOrigin().getY() << ", "
+									<< transform1To8.getOrigin().getZ()
 									<< std::endl;
 							std::cout << "variance1To8: " << variance1To8
 									<< std::endl;
 						}
 					}
-					if(marker_flag2){
+					if (marker_flag2) {
 						if (variance2To8 == 0.05) {
 							ROS_WARN("We lost marker_2 or marker_8!");
-							flag_pub2=false;
+							flag_pub2 = false;
 						} else {
-							flag_pub2=true;
+							flag_pub2 = true;
 							std::cout
 									<< "The transformation from marker_2 to marker_8 in marker_2 frame: [x, y, z] "
-									<< transform2To8.getOrigin().getX()<<", "<<transform2To8.getOrigin().getY()<<", "<<transform2To8.getOrigin().getZ()
+									<< transform2To8.getOrigin().getX() << ", "
+									<< transform2To8.getOrigin().getY() << ", "
+									<< transform2To8.getOrigin().getZ()
 									<< std::endl;
 							std::cout << "variance2To8: " << variance2To8
 									<< std::endl;
 						}
 					}
-					if(marker_flag3){
+					if (marker_flag3) {
 						if (variance3To8 == 0.05) {
 							ROS_WARN("We lost marker_3 or marker_8!");
-							flag_pub3=false;
+							flag_pub3 = false;
 						} else {
-							flag_pub3=true;
+							flag_pub3 = true;
 							std::cout
 									<< "The transformation from marker_3 to marker_8 in marker_3 frame: [x, y, z] "
-									<< transform3To8.getOrigin().getX()<<", "<<transform3To8.getOrigin().getY()<<", "<<transform3To8.getOrigin().getZ()
+									<< transform3To8.getOrigin().getX() << ", "
+									<< transform3To8.getOrigin().getY() << ", "
+									<< transform3To8.getOrigin().getZ()
 									<< std::endl;
 							std::cout << "variance3To8: " << variance3To8
 									<< std::endl;
