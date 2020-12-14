@@ -5,6 +5,8 @@
 	<arg name="camera_namespace" default="camera"/>
 	<arg name="marker_frame_id"     default="base_link"/>
 	<arg name="filters"     default="pointcloud"/>
+	<arg name="max_new_marker_error"     default="0.005"/>
+	<arg name="max_track_error"     default="0.1"/>
     <!-- camera tf Node-->
 
     <!--node name="camera_tf_broadcaster" pkg="ar_marker_localization" type="camera_tf_broadcaster.py" respawn="false" output="screen" >
@@ -14,8 +16,8 @@
 	
 	<include file="$(find ar_track_alvar)/launch/pr2_indiv_no_kinect.launch">
         	<arg name="marker_size" value="$(arg user_marker_size)" />
-        	<arg name="max_new_marker_error" value="0.08" />
-        	<arg name="max_track_error" value="0.2" />
+        	<arg name="max_new_marker_error" value="$(arg max_new_marker_error)" />
+        	<arg name="max_track_error" value="$(arg max_track_error)" />
         	<arg name="cam_image_topic" value="$(arg camera_namespace)/color/image_raw" />
         	<arg name="cam_info_topic" value="$(arg camera_namespace)/color/camera_info" />
         	<arg name="output_frame" value="$(arg marker_frame_id)" />
