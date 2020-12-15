@@ -56,6 +56,7 @@ void initialize() {
 	T3(2, 3) = 0.062;
 	T3(1, 3) = -0.0325;
 	T0ToE = T1 * T2 * T3;
+	std::cout<<"T0ToE\n"<<T0ToE<<std::endl;
 
 	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(-45 * PI / 180,
 			Eigen::Vector3d::UnitZ()).matrix();
@@ -64,6 +65,7 @@ void initialize() {
 	T3(2, 3) = 0.062;
 	T3(1, 3) = -0.0325;
 	T1ToE = T1 * T2 * T3;
+	std::cout<<"T1ToE\n"<<T1ToE<<std::endl;
 
 	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(225 * PI / 180,
 			Eigen::Vector3d::UnitZ()).matrix();
@@ -72,6 +74,7 @@ void initialize() {
 	T3(2, 3) = 0.062;
 	T3(1, 3) = -0.0325;
 	T2ToE = T1 * T2 * T3;
+	std::cout<<"T2ToE\n"<<T2ToE<<std::endl;
 
 	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(135 * PI / 180,
 			Eigen::Vector3d::UnitZ()).matrix();
@@ -80,11 +83,18 @@ void initialize() {
 	T3(2, 3) = 0.062;
 	T3(1, 3) = -0.0325;
 	T3ToE = T1 * T2 * T3;
+	std::cout<<"T3ToE\n"<<T3ToE<<std::endl;
 
 	TCTo8.setIdentity();
-	TCTo8(0, 3) = -0.10;
-	TCTo8(1, 3) = -0.0925;
-	TCTo8(2, 3) = -0.0525;
+	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
+			Eigen::Vector3d::UnitX()).matrix();
+	T2.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
+			Eigen::Vector3d::UnitZ()).matrix();
+	T3(0, 3) = -0.10;
+	T3(1, 3) = -0.0925;
+	T3(2, 3) = -0.0525;
+	TCTo8 = T1 * T2 * T3;
+	std::cout<<"TCTo8\n"<<TCTo8<<std::endl;
 
 	T8To0.setIdentity();
 	T8To1.setIdentity();
@@ -341,25 +351,22 @@ int main(int argc, char** argv) {
 									transform0To8.getRotation()).getColumn(1);
 							tf::Vector3 m2 = tf::Matrix3x3(
 									transform0To8.getRotation()).getColumn(2);
-							double roll, pitch, yaw;
-							tf::Matrix3x3(transform0To8.getRotation()).getEulerZYX(yaw,pitch,roll);
-							Eigen::Vector3d YPR;
-							YPR<<yaw, pitch, roll;
-							T8To0.block(0,0,3,3)=YPRtoRotationMatrix(YPR);
-//							T8To0(0, 0) = m0.getX();
-//							T8To0(1, 0) = m0.getY();
-//							T8To0(2, 0) = m0.getZ();
-//							T8To0(0, 1) = m1.getX();
-//							T8To0(1, 1) = m1.getY();
-//							T8To0(2, 1) = m1.getZ();
-//							T8To0(0, 2) = m2.getX();
-//							T8To0(1, 2) = m2.getY();
-//							T8To0(2, 2) = m2.getZ();
+							T8To0(0, 0) = m0.getX();
+							T8To0(1, 0) = m0.getY();
+							T8To0(2, 0) = m0.getZ();
+							T8To0(0, 1) = m1.getX();
+							T8To0(1, 1) = m1.getY();
+							T8To0(2, 1) = m1.getZ();
+							T8To0(0, 2) = m2.getX();
+							T8To0(1, 2) = m2.getY();
+							T8To0(2, 2) = m2.getZ();
 							T8To0(0, 3) = transform0To8.getOrigin().getX();
 							T8To0(1, 3) = transform0To8.getOrigin().getY();
 							T8To0(2, 3) = transform0To8.getOrigin().getZ();
 
-							TCToE_0 = T0ToE * T8To0 * TCTo8;
+							TCToE_0 = T0ToE* T8To0 * TCTo8;
+							std::cout<<"TCToE_0 \n"<<TCToE_0<<std::endl;
+							
 
 							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
 							m00 = TCToE_0(0, 0);
@@ -380,11 +387,11 @@ int main(int argc, char** argv) {
 							uperPartPoseInRightEndEffectorFrame.orientation =
 									msgQuat;
 							uperPartPoseInRightEndEffectorFrame.position.x =
-									TCToE_0(0, 2);
+									TCToE_0(0, 3);
 							uperPartPoseInRightEndEffectorFrame.position.y =
-									TCToE_0(1, 2);
+									TCToE_0(1, 3);
 							uperPartPoseInRightEndEffectorFrame.position.z =
-									TCToE_0(2, 2);
+									TCToE_0(2, 3);
 
 							std::cout
 									<< "The transformation from marker_0 to marker_8 in marker_0 frame: [x, y, z] "
@@ -443,11 +450,11 @@ int main(int argc, char** argv) {
 							uperPartPoseInRightEndEffectorFrame.orientation =
 									msgQuat;
 							uperPartPoseInRightEndEffectorFrame.position.x =
-									TCToE_1(0, 2);
+									TCToE_1(0, 3);
 							uperPartPoseInRightEndEffectorFrame.position.y =
-									TCToE_1(1, 2);
+									TCToE_1(1, 3);
 							uperPartPoseInRightEndEffectorFrame.position.z =
-									TCToE_1(2, 2);
+									TCToE_1(2, 3);
 
 							std::cout
 									<< "The transformation from marker_1 to marker_8 in marker_1 frame: [x, y, z] "
@@ -506,11 +513,11 @@ int main(int argc, char** argv) {
 							uperPartPoseInRightEndEffectorFrame.orientation =
 									msgQuat;
 							uperPartPoseInRightEndEffectorFrame.position.x =
-									TCToE_2(0, 2);
+									TCToE_2(0, 3);
 							uperPartPoseInRightEndEffectorFrame.position.y =
-									TCToE_2(1, 2);
+									TCToE_2(1, 3);
 							uperPartPoseInRightEndEffectorFrame.position.z =
-									TCToE_2(2, 2);
+									TCToE_2(2, 3);
 
 							std::cout
 									<< "The transformation from marker_2 to marker_8 in marker_2 frame: [x, y, z] "
@@ -569,11 +576,11 @@ int main(int argc, char** argv) {
 							uperPartPoseInRightEndEffectorFrame.orientation =
 									msgQuat;
 							uperPartPoseInRightEndEffectorFrame.position.x =
-									TCToE_3(0, 2);
+									TCToE_3(0, 3);
 							uperPartPoseInRightEndEffectorFrame.position.y =
-									TCToE_3(1, 2);
+									TCToE_3(1, 3);
 							uperPartPoseInRightEndEffectorFrame.position.z =
-									TCToE_3(2, 2);
+									TCToE_3(2, 3);
 
 							std::cout
 									<< "The transformation from marker_3 to marker_8 in marker_3 frame: [x, y, z] "
