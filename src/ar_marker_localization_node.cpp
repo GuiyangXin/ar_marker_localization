@@ -1,7 +1,132 @@
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
+#include <tf/LinearMath/Quaternion.h>
+#include "geometry_msgs/Vector3.h"
+#include "geometry_msgs/Quaternion.h"
+#include "tf/transform_datatypes.h"
+//#include "LinearMath/btMatrix3x3.h"
 #include <geometry_msgs/Twist.h>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <geometry_msgs/Pose.h>
 #define Num 20
+
+Eigen::Matrix4d T0ToE;
+Eigen::Matrix4d T1ToE;
+Eigen::Matrix4d T2ToE;
+Eigen::Matrix4d T3ToE;
+Eigen::Matrix4d T8To0;
+Eigen::Matrix4d T8To1;
+Eigen::Matrix4d T8To2;
+Eigen::Matrix4d T8To3;
+Eigen::Matrix4d TCTo8;
+Eigen::Vector3d YPR0To8;
+Eigen::Vector3d YPR1To8;
+Eigen::Vector3d YPR2To8;
+Eigen::Vector3d YPR3To8;
+Eigen::Vector3d YPRCToE;
+Eigen::Matrix4d TCToE_0;
+Eigen::Matrix4d TCToE_1;
+Eigen::Matrix4d TCToE_2;
+Eigen::Matrix4d TCToE_3;
+
+Eigen::Quaterniond q0;
+Eigen::Quaterniond q1;
+Eigen::Quaterniond q2;
+Eigen::Quaterniond q3;
+
+geometry_msgs::Pose uperPartPoseInRightEndEffectorFrame;
+
+void initialize() {
+	T0ToE.setZero();
+	T1ToE.setZero();
+	T2ToE.setZero();
+	T3ToE.setZero();
+	T0ToE(3, 3) = 1;
+	T1ToE(3, 3) = 1;
+	T2ToE(3, 3) = 1;
+	T3ToE(3, 3) = 1;
+	T0ToE.block(0, 0, 3, 3) << 1, 0, 0, 0, 1, 0, 0, 0, 1;
+	T1ToE.block(0, 0, 3, 3) << 1, 0, 0, 0, 1, 0, 0, 0, 1;
+	T2ToE.block(0, 0, 3, 3) << 1, 0, 0, 0, 1, 0, 0, 0, 1;
+	T3ToE.block(0, 0, 3, 3) << 1, 0, 0, 0, 1, 0, 0, 0, 1;
+
+	T8To0.setIdentity();
+	T8To1.setIdentity();
+	T8To2.setIdentity();
+	T8To3.setIdentity();
+
+	TCTo8.setIdentity();
+
+	YPR0To8.setZero();
+	YPR1To8.setZero();
+	YPR2To8.setZero();
+	YPR3To8.setZero();
+	YPRCToE.setZero();
+
+	TCToE_0.setIdentity();
+	TCToE_1.setIdentity();
+	TCToE_2.setIdentity();
+	TCToE_3.setIdentity();
+
+	q0.setIdentity();
+	q1.setIdentity();
+	q2.setIdentity();
+	q3.setIdentity();
+}
+
+Eigen::Matrix3d YPRtoRotationMatrix(Eigen::Vector3d & ypr) {
+	Eigen::Matrix3d R;
+	R.setZero();
+	R << cos(ypr(0)) * cos(ypr(1)), cos(ypr(0)) * sin(ypr(1)) * sin(ypr(2))
+			- sin(ypr(0)) * cos(ypr(2)), cos(ypr(0)) * sin(ypr(1)) * cos(ypr(2))
+			- sin(ypr(0)) * sin(ypr(2)), sin(ypr(0)) * cos(ypr(1)), sin(ypr(0))
+			* sin(ypr(1)) * sin(ypr(2)) + cos(ypr(0)) * cos(ypr(2)), sin(ypr(0))
+			* sin(ypr(1)) * cos(ypr(2)) + cos(ypr(0)) * sin(ypr(2)), -sin(
+			ypr(1)), cos(ypr(1)) * sin(ypr(2)), cos(ypr(1)) * cos(ypr(2));
+	return R;
+}
+
+Eigen::Vector3d QuaterniontoEulerAngleZyx(const tf::Quaternion q) {
+	// roll (x-axis rotation)
+	double sinr_cosp = +2.0 * (q.getW() * q.getX() + q.getY() * q.getZ());
+	double cosr_cosp = +1.0 - 2.0 * (q.getX() * q.getX() + q.getY() * q.getY());
+	Eigen::Vector3d result;
+	result(2) = atan2(sinr_cosp, cosr_cosp);
+
+	// pitch (y-axis rotation)
+	double sinp = +2.0 * (q.getW() * q.getY() - q.getZ() * q.getX());
+	if (fabs(sinp) >= 1)
+		result(1) = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+	else
+		result(1) = asin(sinp);
+
+	// yaw (z-axis rotation)
+	double siny_cosp = +2.0 * (q.getW() * q.getZ() + q.getX() * q.getY());
+	double cosy_cosp = +1.0 - 2.0 * (q.getY() * q.getY() + q.getZ() * q.getZ());
+	result(0) = atan2(siny_cosp, cosy_cosp);
+
+	return result;
+}
+
+Eigen::Vector4d YPRtoQuaternion(Eigen::Vector3d ypr) // yaw (Z), pitch (Y), roll (X)
+		{
+	// Abbreviations for the various angular functions
+	double cy = cos(ypr(0) * 0.5);
+	double sy = sin(ypr(0) * 0.5);
+	double cp = cos(ypr(1) * 0.5);
+	double sp = sin(ypr(1) * 0.5);
+	double cr = cos(ypr(2) * 0.5);
+	double sr = sin(ypr(2) * 0.5);
+
+	Eigen::Vector4d q;
+	q(3) = cr * cp * cy + sr * sp * sy;
+	q(0) = sr * cp * cy - cr * sp * sy;
+	q(1) = cr * sp * cy + sr * cp * sy;
+	q(2) = cr * cp * sy - sr * sp * cy;
+
+	return q;
+}
 
 void computeVariance(double & var, double x, double * array) {
 	for (int i = 0; i < Num; i++) {
@@ -30,14 +155,8 @@ int main(int argc, char** argv) {
 
 	ros::NodeHandle node;
 
-//  ros::service::waitForService("spawn");
-//  ros::ServiceClient add_turtle =
-//    node.serviceClient<turtlesim::Spawn>("spawn");
-//  turtlesim::Spawn srv;
-//  add_turtle.call(srv);
-//
-//  ros::Publisher turtle_vel =
-//    node.advertise<geometry_msgs::Twist>("turtle2/cmd_vel", 10);
+	ros::Publisher uperPartPoseInRightEndEffectorFrame_pub = node.advertise<
+			geometry_msgs::Pose>("uperPartPoseInRightEndEffectorFrame", 1000);
 
 	tf::TransformListener listener;
 	tf::StampedTransform transformB2M8;
@@ -67,6 +186,8 @@ int main(int argc, char** argv) {
 	bool marker_flag1 = false;
 	bool marker_flag2 = false;
 	bool marker_flag3 = false;
+
+	initialize();
 
 	ros::Rate rate(10.0);
 	while (node.ok()) {
@@ -136,8 +257,10 @@ int main(int argc, char** argv) {
 					if (!flag2) {
 						ROS_ERROR("I cannot localise the robot!");
 						continue;
-					}else if(!marker_flag0 && !marker_flag1 && !marker_flag2 && !marker_flag3){
-						ROS_ERROR("I cannot localise the robot because I lost all the markers!");
+					} else if (!marker_flag0 && !marker_flag1 && !marker_flag2
+							&& !marker_flag3) {
+						ROS_ERROR(
+								"I cannot localise the robot because I lost all the markers!");
 					}
 
 					//compute the transformation
@@ -178,6 +301,55 @@ int main(int argc, char** argv) {
 							flag_pub0 = false;
 						} else {
 							flag_pub0 = true;
+//							YPR0To8=QuaterniontoEulerAngleZyx(transform0To8.getRotation());
+
+							tf::Vector3 m0 = tf::Matrix3x3(
+									transform0To8.getRotation()).getColumn(0);
+							tf::Vector3 m1 = tf::Matrix3x3(
+									transform0To8.getRotation()).getColumn(1);
+							tf::Vector3 m2 = tf::Matrix3x3(
+									transform0To8.getRotation()).getColumn(2);
+							T8To0(0, 0) = m0.getX();
+							T8To0(1, 0) = m0.getY();
+							T8To0(2, 0) = m0.getZ();
+							T8To0(0, 1) = m1.getX();
+							T8To0(1, 1) = m1.getY();
+							T8To0(2, 1) = m1.getZ();
+							T8To0(0, 2) = m2.getX();
+							T8To0(1, 2) = m2.getY();
+							T8To0(2, 2) = m2.getZ();
+//							T8To0.block(0,0,3,3)=YPRtoRotationMatrix(YPR0To8);
+							T8To0(0, 3) = transform0To8.getOrigin().getX();
+							T8To0(1, 3) = transform0To8.getOrigin().getY();
+							T8To0(2, 3) = transform0To8.getOrigin().getZ();
+
+							TCToE_0 = T0ToE * T8To0 * TCTo8;
+
+							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
+							m00 = TCToE_0(0, 0);
+							m01 = TCToE_0(0, 1);
+							m02 = TCToE_0(0, 2);
+							m10 = TCToE_0(1, 0);
+							m11 = TCToE_0(1, 1);
+							m12 = TCToE_0(1, 2);
+							m20 = TCToE_0(2, 0);
+							m21 = TCToE_0(2, 1);
+							m22 = TCToE_0(2, 2);
+							tf::Quaternion quat;
+							tf::Matrix3x3(m00, m01, m02, m10, m11, m12, m20,
+									m21, m22).getRotation(quat);
+							geometry_msgs::Quaternion msgQuat;
+							tf::quaternionTFToMsg(quat, msgQuat);
+
+							uperPartPoseInRightEndEffectorFrame.orientation =
+									msgQuat;
+							uperPartPoseInRightEndEffectorFrame.position.x =
+									TCToE_0(0, 2);
+							uperPartPoseInRightEndEffectorFrame.position.y =
+									TCToE_0(1, 2);
+							uperPartPoseInRightEndEffectorFrame.position.z =
+									TCToE_0(2, 2);
+
 							std::cout
 									<< "The transformation from marker_0 to marker_8 in marker_0 frame: [x, y, z] "
 									<< transform0To8.getOrigin().getX() << ", "
@@ -194,6 +366,57 @@ int main(int argc, char** argv) {
 							flag_pub1 = false;
 						} else {
 							flag_pub1 = true;
+//							YPR1To8 = QuaterniontoEulerAngleZyx(
+//									transform1To8.getRotation());
+//							T8To1.block(0, 0, 3, 3) = YPRtoRotationMatrix(
+//									YPR1To8);
+
+							tf::Vector3 m0 = tf::Matrix3x3(
+									transform1To8.getRotation()).getColumn(0);
+							tf::Vector3 m1 = tf::Matrix3x3(
+									transform1To8.getRotation()).getColumn(1);
+							tf::Vector3 m2 = tf::Matrix3x3(
+									transform1To8.getRotation()).getColumn(2);
+							T8To1(0, 0) = m0.getX();
+							T8To1(1, 0) = m0.getY();
+							T8To1(2, 0) = m0.getZ();
+							T8To1(0, 1) = m1.getX();
+							T8To1(1, 1) = m1.getY();
+							T8To1(2, 1) = m1.getZ();
+							T8To1(0, 2) = m2.getX();
+							T8To1(1, 2) = m2.getY();
+							T8To1(2, 2) = m2.getZ();
+							T8To1(0, 3) = transform1To8.getOrigin().getX();
+							T8To1(1, 3) = transform1To8.getOrigin().getY();
+							T8To1(2, 3) = transform1To8.getOrigin().getZ();
+
+							TCToE_1 = T1ToE * T8To1 * TCTo8;
+
+							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
+							m00 = TCToE_1(0, 0);
+							m01 = TCToE_1(0, 1);
+							m02 = TCToE_1(0, 2);
+							m10 = TCToE_1(1, 0);
+							m11 = TCToE_1(1, 1);
+							m12 = TCToE_1(1, 2);
+							m20 = TCToE_1(2, 0);
+							m21 = TCToE_1(2, 1);
+							m22 = TCToE_1(2, 2);
+							tf::Quaternion quat;
+							tf::Matrix3x3(m00, m01, m02, m10, m11, m12, m20,
+									m21, m22).getRotation(quat);
+							geometry_msgs::Quaternion msgQuat;
+							tf::quaternionTFToMsg(quat, msgQuat);
+
+							uperPartPoseInRightEndEffectorFrame.orientation =
+									msgQuat;
+							uperPartPoseInRightEndEffectorFrame.position.x =
+									TCToE_1(0, 2);
+							uperPartPoseInRightEndEffectorFrame.position.y =
+									TCToE_1(1, 2);
+							uperPartPoseInRightEndEffectorFrame.position.z =
+									TCToE_1(2, 2);
+
 							std::cout
 									<< "The transformation from marker_1 to marker_8 in marker_1 frame: [x, y, z] "
 									<< transform1To8.getOrigin().getX() << ", "
@@ -210,6 +433,55 @@ int main(int argc, char** argv) {
 							flag_pub2 = false;
 						} else {
 							flag_pub2 = true;
+//							YPR2To8 = QuaterniontoEulerAngleZyx(
+//									transform2To8.getRotation());
+
+							tf::Vector3 m0 = tf::Matrix3x3(
+									transform2To8.getRotation()).getColumn(0);
+							tf::Vector3 m1 = tf::Matrix3x3(
+									transform2To8.getRotation()).getColumn(1);
+							tf::Vector3 m2 = tf::Matrix3x3(
+									transform2To8.getRotation()).getColumn(2);
+							T8To2(0, 0) = m0.getX();
+							T8To2(1, 0) = m0.getY();
+							T8To2(2, 0) = m0.getZ();
+							T8To2(0, 1) = m1.getX();
+							T8To2(1, 1) = m1.getY();
+							T8To2(2, 1) = m1.getZ();
+							T8To2(0, 2) = m2.getX();
+							T8To2(1, 2) = m2.getY();
+							T8To2(2, 2) = m2.getZ();
+							T8To2(0, 3) = transform2To8.getOrigin().getX();
+							T8To2(1, 3) = transform2To8.getOrigin().getY();
+							T8To2(2, 3) = transform2To8.getOrigin().getZ();
+
+							TCToE_2 = T1ToE * T8To2 * TCTo8;
+
+							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
+							m00 = TCToE_2(0, 0);
+							m01 = TCToE_2(0, 1);
+							m02 = TCToE_2(0, 2);
+							m10 = TCToE_2(1, 0);
+							m11 = TCToE_2(1, 1);
+							m12 = TCToE_2(1, 2);
+							m20 = TCToE_2(2, 0);
+							m21 = TCToE_2(2, 1);
+							m22 = TCToE_2(2, 2);
+							tf::Quaternion quat;
+							tf::Matrix3x3(m00, m01, m02, m10, m11, m12, m20,
+									m21, m22).getRotation(quat);
+							geometry_msgs::Quaternion msgQuat;
+							tf::quaternionTFToMsg(quat, msgQuat);
+
+							uperPartPoseInRightEndEffectorFrame.orientation =
+									msgQuat;
+							uperPartPoseInRightEndEffectorFrame.position.x =
+									TCToE_2(0, 2);
+							uperPartPoseInRightEndEffectorFrame.position.y =
+									TCToE_2(1, 2);
+							uperPartPoseInRightEndEffectorFrame.position.z =
+									TCToE_2(2, 2);
+
 							std::cout
 									<< "The transformation from marker_2 to marker_8 in marker_2 frame: [x, y, z] "
 									<< transform2To8.getOrigin().getX() << ", "
@@ -226,6 +498,55 @@ int main(int argc, char** argv) {
 							flag_pub3 = false;
 						} else {
 							flag_pub3 = true;
+//							YPR3To8 = QuaterniontoEulerAngleZyx(
+//									transform3To8.getRotation());
+
+							tf::Vector3 m0 = tf::Matrix3x3(
+									transform3To8.getRotation()).getColumn(0);
+							tf::Vector3 m1 = tf::Matrix3x3(
+									transform3To8.getRotation()).getColumn(1);
+							tf::Vector3 m2 = tf::Matrix3x3(
+									transform3To8.getRotation()).getColumn(2);
+							T8To3(0, 0) = m0.getX();
+							T8To3(1, 0) = m0.getY();
+							T8To3(2, 0) = m0.getZ();
+							T8To3(0, 1) = m1.getX();
+							T8To3(1, 1) = m1.getY();
+							T8To3(2, 1) = m1.getZ();
+							T8To3(0, 2) = m2.getX();
+							T8To3(1, 2) = m2.getY();
+							T8To3(2, 2) = m2.getZ();
+							T8To3(0, 3) = transform3To8.getOrigin().getX();
+							T8To3(1, 3) = transform3To8.getOrigin().getY();
+							T8To3(2, 3) = transform3To8.getOrigin().getZ();
+
+							TCToE_3 = T1ToE * T8To3 * TCTo8;
+
+							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
+							m00 = TCToE_3(0, 0);
+							m01 = TCToE_3(0, 1);
+							m02 = TCToE_3(0, 2);
+							m10 = TCToE_3(1, 0);
+							m11 = TCToE_3(1, 1);
+							m12 = TCToE_3(1, 2);
+							m20 = TCToE_3(2, 0);
+							m21 = TCToE_3(2, 1);
+							m22 = TCToE_3(2, 2);
+							tf::Quaternion quat;
+							tf::Matrix3x3(m00, m01, m02, m10, m11, m12, m20,
+									m21, m22).getRotation(quat);
+							geometry_msgs::Quaternion msgQuat;
+							tf::quaternionTFToMsg(quat, msgQuat);
+
+							uperPartPoseInRightEndEffectorFrame.orientation =
+									msgQuat;
+							uperPartPoseInRightEndEffectorFrame.position.x =
+									TCToE_3(0, 2);
+							uperPartPoseInRightEndEffectorFrame.position.y =
+									TCToE_3(1, 2);
+							uperPartPoseInRightEndEffectorFrame.position.z =
+									TCToE_3(2, 2);
+
 							std::cout
 									<< "The transformation from marker_3 to marker_8 in marker_3 frame: [x, y, z] "
 									<< transform3To8.getOrigin().getX() << ", "
@@ -235,6 +556,12 @@ int main(int argc, char** argv) {
 							std::cout << "variance3To8: " << variance3To8
 									<< std::endl;
 						}
+					}
+
+					if (marker_flag0 || marker_flag1 || marker_flag2
+							|| marker_flag3) {
+						uperPartPoseInRightEndEffectorFrame_pub.publish(
+								uperPartPoseInRightEndEffectorFrame);
 					}
 
 				}
