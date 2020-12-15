@@ -113,9 +113,9 @@ Eigen::Matrix3d YPRtoRotationMatrix(Eigen::Vector3d & ypr) {
 	R.setZero();
 	R << cos(ypr(0)) * cos(ypr(1)), cos(ypr(0)) * sin(ypr(1)) * sin(ypr(2))
 			- sin(ypr(0)) * cos(ypr(2)), cos(ypr(0)) * sin(ypr(1)) * cos(ypr(2))
-			- sin(ypr(0)) * sin(ypr(2)), sin(ypr(0)) * cos(ypr(1)), sin(ypr(0))
+			+ sin(ypr(0)) * sin(ypr(2)), sin(ypr(0)) * cos(ypr(1)), sin(ypr(0))
 			* sin(ypr(1)) * sin(ypr(2)) + cos(ypr(0)) * cos(ypr(2)), sin(ypr(0))
-			* sin(ypr(1)) * cos(ypr(2)) + cos(ypr(0)) * sin(ypr(2)), -sin(
+			* sin(ypr(1)) * cos(ypr(2)) - cos(ypr(0)) * sin(ypr(2)), -sin(
 			ypr(1)), cos(ypr(1)) * sin(ypr(2)), cos(ypr(1)) * cos(ypr(2));
 	return R;
 }
