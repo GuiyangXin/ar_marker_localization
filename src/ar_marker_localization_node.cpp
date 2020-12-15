@@ -43,31 +43,48 @@ void initialize() {
 	T1ToE.setIdentity();
 	T2ToE.setIdentity();
 	T3ToE.setIdentity();
-	T0ToE.block(0, 0, 3, 3) = Eigen::AngleAxisd(45 * PI / 180,
-			Eigen::Vector3d::UnitZ()).matrix()
-			* Eigen::AngleAxisd(-90 * PI / 180, Eigen::Vector3d::UnitX()).matrix();
-	T0ToE(2, 3) = 0.062;
-	T0ToE(1, 3) = -0.0325;
-	T1ToE.block(0, 0, 3, 3) = Eigen::AngleAxisd(-45 * PI / 180,
-			Eigen::Vector3d::UnitZ()).matrix()
-			* Eigen::AngleAxisd(-90 * PI / 180, Eigen::Vector3d::UnitX()).matrix();
-	T1ToE(2, 3) = 0.062;
-	T1ToE(1, 3) = -0.0325;
-	T2ToE.block(0, 0, 3, 3) = Eigen::AngleAxisd(225 * PI / 180,
-			Eigen::Vector3d::UnitZ()).matrix()
-			* Eigen::AngleAxisd(-90 * PI / 180, Eigen::Vector3d::UnitX()).matrix();
-	T2ToE(2, 3) = 0.062;
-	T2ToE(1, 3) = -0.0325;
-	T3ToE.block(0, 0, 3, 3) = Eigen::AngleAxisd(135 * PI / 180,
-			Eigen::Vector3d::UnitZ()).matrix()
-			* Eigen::AngleAxisd(-90 * PI / 180, Eigen::Vector3d::UnitX()).matrix();
-	T3ToE(2, 3) = 0.062;
-	T3ToE(1, 3) = -0.0325;
+	Eigen::Matrix4d T1;
+	T1.setIdentity();
+	Eigen::Matrix4d T2;
+	T2.setIdentity();
+	Eigen::Matrix4d T3;
+	T3.setIdentity();
+	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(45 * PI / 180,
+			Eigen::Vector3d::UnitZ()).matrix();
+	T2.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
+			Eigen::Vector3d::UnitX()).matrix();
+	T3(2, 3) = 0.062;
+	T3(1, 3) = -0.0325;
+	T0ToE = T1 * T2 * T3;
+
+	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(-45 * PI / 180,
+			Eigen::Vector3d::UnitZ()).matrix();
+	T2.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
+			Eigen::Vector3d::UnitX()).matrix();
+	T3(2, 3) = 0.062;
+	T3(1, 3) = -0.0325;
+	T1ToE = T1 * T2 * T3;
+
+	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(225 * PI / 180,
+			Eigen::Vector3d::UnitZ()).matrix();
+	T2.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
+			Eigen::Vector3d::UnitX()).matrix();
+	T3(2, 3) = 0.062;
+	T3(1, 3) = -0.0325;
+	T2ToE = T1 * T2 * T3;
+
+	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(135 * PI / 180,
+			Eigen::Vector3d::UnitZ()).matrix();
+	T2.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
+			Eigen::Vector3d::UnitX()).matrix();
+	T3(2, 3) = 0.062;
+	T3(1, 3) = -0.0325;
+	T3ToE = T1 * T2 * T3;
 
 	TCTo8.setIdentity();
-	TCTo8(0,3)=-10;
-	TCTo8(1,3)=-9.25;
-	TCTo8(2,3)=-5.25;
+	TCTo8(0, 3) = -0.10;
+	TCTo8(1, 3) = -0.0925;
+	TCTo8(2, 3) = -0.0525;
 
 	T8To0.setIdentity();
 	T8To1.setIdentity();
