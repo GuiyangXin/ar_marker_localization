@@ -108,17 +108,17 @@ void initialize() {
 //	q3.setIdentity();
 }
 
-//Eigen::Matrix3d YPRtoRotationMatrix(Eigen::Vector3d & ypr) {
-//	Eigen::Matrix3d R;
-//	R.setZero();
-//	R << cos(ypr(0)) * cos(ypr(1)), cos(ypr(0)) * sin(ypr(1)) * sin(ypr(2))
-//			- sin(ypr(0)) * cos(ypr(2)), cos(ypr(0)) * sin(ypr(1)) * cos(ypr(2))
-//			- sin(ypr(0)) * sin(ypr(2)), sin(ypr(0)) * cos(ypr(1)), sin(ypr(0))
-//			* sin(ypr(1)) * sin(ypr(2)) + cos(ypr(0)) * cos(ypr(2)), sin(ypr(0))
-//			* sin(ypr(1)) * cos(ypr(2)) + cos(ypr(0)) * sin(ypr(2)), -sin(
-//			ypr(1)), cos(ypr(1)) * sin(ypr(2)), cos(ypr(1)) * cos(ypr(2));
-//	return R;
-//}
+Eigen::Matrix3d YPRtoRotationMatrix(Eigen::Vector3d & ypr) {
+	Eigen::Matrix3d R;
+	R.setZero();
+	R << cos(ypr(0)) * cos(ypr(1)), cos(ypr(0)) * sin(ypr(1)) * sin(ypr(2))
+			- sin(ypr(0)) * cos(ypr(2)), cos(ypr(0)) * sin(ypr(1)) * cos(ypr(2))
+			- sin(ypr(0)) * sin(ypr(2)), sin(ypr(0)) * cos(ypr(1)), sin(ypr(0))
+			* sin(ypr(1)) * sin(ypr(2)) + cos(ypr(0)) * cos(ypr(2)), sin(ypr(0))
+			* sin(ypr(1)) * cos(ypr(2)) + cos(ypr(0)) * sin(ypr(2)), -sin(
+			ypr(1)), cos(ypr(1)) * sin(ypr(2)), cos(ypr(1)) * cos(ypr(2));
+	return R;
+}
 //
 //Eigen::Vector3d QuaterniontoEulerAngleZyx(const tf::Quaternion q) {
 //	// roll (x-axis rotation)
@@ -341,15 +341,20 @@ int main(int argc, char** argv) {
 									transform0To8.getRotation()).getColumn(1);
 							tf::Vector3 m2 = tf::Matrix3x3(
 									transform0To8.getRotation()).getColumn(2);
-							T8To0(0, 0) = m0.getX();
-							T8To0(1, 0) = m0.getY();
-							T8To0(2, 0) = m0.getZ();
-							T8To0(0, 1) = m1.getX();
-							T8To0(1, 1) = m1.getY();
-							T8To0(2, 1) = m1.getZ();
-							T8To0(0, 2) = m2.getX();
-							T8To0(1, 2) = m2.getY();
-							T8To0(2, 2) = m2.getZ();
+							double roll, pitch, yaw;
+							tf::Matrix3x3(transform0To8.getRotation()).getEulerZYX(yaw,pitch,roll);
+							Eigen::Vector3d YPR;
+							YPR<<yaw, pitch, roll;
+							T8To0.block(0,0,3,3)=YPRtoRotationMatrix(YPR);
+//							T8To0(0, 0) = m0.getX();
+//							T8To0(1, 0) = m0.getY();
+//							T8To0(2, 0) = m0.getZ();
+//							T8To0(0, 1) = m1.getX();
+//							T8To0(1, 1) = m1.getY();
+//							T8To0(2, 1) = m1.getZ();
+//							T8To0(0, 2) = m2.getX();
+//							T8To0(1, 2) = m2.getY();
+//							T8To0(2, 2) = m2.getZ();
 							T8To0(0, 3) = transform0To8.getOrigin().getX();
 							T8To0(1, 3) = transform0To8.getOrigin().getY();
 							T8To0(2, 3) = transform0To8.getOrigin().getZ();
