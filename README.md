@@ -26,6 +26,6 @@ catkin_make
 source devel/setup.bash
 roslaunch ar_marker_localization ar_maker_localization.launch
 ```
-The coordinate transformation from base_link frame (camera's base is the centre of the screw circle) to marker frame is published on ros topic `/camera2markerTransformation`
+The uper object's pose with respect to the end-effector frame is published on ros topic `/uperPartPoseInRightEndEffectorFrame` with ``geometry_msgs/Pose`` message type.
 
 
