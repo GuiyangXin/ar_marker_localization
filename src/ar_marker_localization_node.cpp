@@ -35,7 +35,7 @@ Eigen::Matrix4d TCToE_3;
 //Eigen::Quaterniond q2;
 //Eigen::Quaterniond q3;
 
-geometry_msgs::Pose uperPartPoseInRightEndEffectorFrame;
+geometry_msgs::Pose upperPartPoseInRightEndEffectorFrame;
 geometry_msgs::Pose lowerPartPoseInUpperPartFrame;
 
 void initialize(bool & isBlackBox) {
@@ -236,8 +236,8 @@ int main(int argc, char** argv) {
 
 	ros::NodeHandle node;
 
-	ros::Publisher uperPartPoseInRightEndEffectorFrame_pub = node.advertise<
-			geometry_msgs::Pose>("uperPartPoseInRightEndEffectorFrame", 1000);
+	ros::Publisher upperPartPoseInRightEndEffectorFrame_pub = node.advertise<
+			geometry_msgs::Pose>("upperPartPoseInRightEndEffectorFrame", 1000);
 	ros::Publisher lowerPartPoseInUpperPartFrame_pub = node.advertise<
 			geometry_msgs::Pose>("lowerPartPoseInUpperPartFrame", 1000);
 
@@ -455,13 +455,13 @@ int main(int argc, char** argv) {
 							geometry_msgs::Quaternion msgQuat;
 							tf::quaternionTFToMsg(quat, msgQuat);
 
-							uperPartPoseInRightEndEffectorFrame.orientation =
+							upperPartPoseInRightEndEffectorFrame.orientation =
 									msgQuat;
-							uperPartPoseInRightEndEffectorFrame.position.x =
+							upperPartPoseInRightEndEffectorFrame.position.x =
 									TCToE_0(0, 3);
-							uperPartPoseInRightEndEffectorFrame.position.y =
+							upperPartPoseInRightEndEffectorFrame.position.y =
 									TCToE_0(1, 3);
-							uperPartPoseInRightEndEffectorFrame.position.z =
+							upperPartPoseInRightEndEffectorFrame.position.z =
 									TCToE_0(2, 3);
 
 							//Print out
@@ -519,13 +519,13 @@ int main(int argc, char** argv) {
 							geometry_msgs::Quaternion msgQuat;
 							tf::quaternionTFToMsg(quat, msgQuat);
 
-							uperPartPoseInRightEndEffectorFrame.orientation =
+							upperPartPoseInRightEndEffectorFrame.orientation =
 									msgQuat;
-							uperPartPoseInRightEndEffectorFrame.position.x =
+							upperPartPoseInRightEndEffectorFrame.position.x =
 									TCToE_1(0, 3);
-							uperPartPoseInRightEndEffectorFrame.position.y =
+							upperPartPoseInRightEndEffectorFrame.position.y =
 									TCToE_1(1, 3);
-							uperPartPoseInRightEndEffectorFrame.position.z =
+							upperPartPoseInRightEndEffectorFrame.position.z =
 									TCToE_1(2, 3);
 
 							std::cout
@@ -582,13 +582,13 @@ int main(int argc, char** argv) {
 							geometry_msgs::Quaternion msgQuat;
 							tf::quaternionTFToMsg(quat, msgQuat);
 
-							uperPartPoseInRightEndEffectorFrame.orientation =
+							upperPartPoseInRightEndEffectorFrame.orientation =
 									msgQuat;
-							uperPartPoseInRightEndEffectorFrame.position.x =
+							upperPartPoseInRightEndEffectorFrame.position.x =
 									TCToE_2(0, 3);
-							uperPartPoseInRightEndEffectorFrame.position.y =
+							upperPartPoseInRightEndEffectorFrame.position.y =
 									TCToE_2(1, 3);
-							uperPartPoseInRightEndEffectorFrame.position.z =
+							upperPartPoseInRightEndEffectorFrame.position.z =
 									TCToE_2(2, 3);
 
 							std::cout
@@ -645,13 +645,13 @@ int main(int argc, char** argv) {
 							geometry_msgs::Quaternion msgQuat;
 							tf::quaternionTFToMsg(quat, msgQuat);
 
-							uperPartPoseInRightEndEffectorFrame.orientation =
+							upperPartPoseInRightEndEffectorFrame.orientation =
 									msgQuat;
-							uperPartPoseInRightEndEffectorFrame.position.x =
+							upperPartPoseInRightEndEffectorFrame.position.x =
 									TCToE_3(0, 3);
-							uperPartPoseInRightEndEffectorFrame.position.y =
+							upperPartPoseInRightEndEffectorFrame.position.y =
 									TCToE_3(1, 3);
-							uperPartPoseInRightEndEffectorFrame.position.z =
+							upperPartPoseInRightEndEffectorFrame.position.z =
 									TCToE_3(2, 3);
 
 							std::cout
@@ -728,8 +728,8 @@ int main(int argc, char** argv) {
 
 					//publish ros msg
 					if (flag_pub0 || flag_pub1 || flag_pub2 || flag_pub3) {
-						uperPartPoseInRightEndEffectorFrame_pub.publish(
-								uperPartPoseInRightEndEffectorFrame);
+						upperPartPoseInRightEndEffectorFrame_pub.publish(
+								upperPartPoseInRightEndEffectorFrame);
 					}
 					if (flag_pub_UcLc) {
 						lowerPartPoseInUpperPartFrame_pub.publish(
