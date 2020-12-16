@@ -20,12 +20,11 @@ Eigen::Matrix4d T8To0;
 Eigen::Matrix4d T8To1;
 Eigen::Matrix4d T8To2;
 Eigen::Matrix4d T8To3;
+Eigen::Matrix4d T9To8;
 Eigen::Matrix4d TCTo8;
-//Eigen::Vector3d YPR0To8;
-//Eigen::Vector3d YPR1To8;
-//Eigen::Vector3d YPR2To8;
-//Eigen::Vector3d YPR3To8;
-//Eigen::Vector3d YPRCToE;
+Eigen::Matrix4d TLcTo9;
+Eigen::Matrix4d TLcToUc;
+
 Eigen::Matrix4d TCToE_0;
 Eigen::Matrix4d TCToE_1;
 Eigen::Matrix4d TCToE_2;
@@ -37,6 +36,7 @@ Eigen::Matrix4d TCToE_3;
 //Eigen::Quaterniond q3;
 
 geometry_msgs::Pose uperPartPoseInRightEndEffectorFrame;
+geometry_msgs::Pose lowerPartPoseInUpperPartFrame;
 
 void initialize() {
 	T0ToE.setIdentity();
@@ -56,7 +56,7 @@ void initialize() {
 	T3(2, 3) = 0.062;
 	T3(1, 3) = -0.0325;
 	T0ToE = T1 * T2 * T3;
-	std::cout<<"T0ToE\n"<<T0ToE<<std::endl;
+	std::cout << "T0ToE\n" << T0ToE << std::endl;
 
 	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(-45 * PI / 180,
 			Eigen::Vector3d::UnitZ()).matrix();
@@ -65,7 +65,7 @@ void initialize() {
 	T3(2, 3) = 0.062;
 	T3(1, 3) = -0.0325;
 	T1ToE = T1 * T2 * T3;
-	std::cout<<"T1ToE\n"<<T1ToE<<std::endl;
+	std::cout << "T1ToE\n" << T1ToE << std::endl;
 
 	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(225 * PI / 180,
 			Eigen::Vector3d::UnitZ()).matrix();
@@ -74,7 +74,7 @@ void initialize() {
 	T3(2, 3) = 0.062;
 	T3(1, 3) = -0.0325;
 	T2ToE = T1 * T2 * T3;
-	std::cout<<"T2ToE\n"<<T2ToE<<std::endl;
+	std::cout << "T2ToE\n" << T2ToE << std::endl;
 
 	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(135 * PI / 180,
 			Eigen::Vector3d::UnitZ()).matrix();
@@ -83,7 +83,7 @@ void initialize() {
 	T3(2, 3) = 0.062;
 	T3(1, 3) = -0.0325;
 	T3ToE = T1 * T2 * T3;
-	std::cout<<"T3ToE\n"<<T3ToE<<std::endl;
+	std::cout << "T3ToE\n" << T3ToE << std::endl;
 
 	TCTo8.setIdentity();
 	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
@@ -94,12 +94,25 @@ void initialize() {
 	T3(1, 3) = -0.0925;
 	T3(2, 3) = -0.0525;
 	TCTo8 = T1 * T2 * T3;
-	std::cout<<"TCTo8\n"<<TCTo8<<std::endl;
+	std::cout << "TCTo8\n" << TCTo8 << std::endl;
+
+	TLcTo9.setIdentity();
+	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
+			Eigen::Vector3d::UnitX()).matrix();
+	T2.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
+			Eigen::Vector3d::UnitZ()).matrix();
+	T3(0, 3) = -0.10;
+	T3(1, 3) = -0.0925;
+	T3(2, 3) = -0.0525;
+	TLcTo9 = T1 * T2 * T3;
+	std::cout << "TLcTo9\n" << TLcTo9 << std::endl;
 
 	T8To0.setIdentity();
 	T8To1.setIdentity();
 	T8To2.setIdentity();
 	T8To3.setIdentity();
+	T9To8.setIdentity();
+	TLcToUc.setIdentity();
 
 	TCToE_0.setIdentity();
 	TCToE_1.setIdentity();
@@ -200,23 +213,28 @@ int main(int argc, char** argv) {
 
 	ros::Publisher uperPartPoseInRightEndEffectorFrame_pub = node.advertise<
 			geometry_msgs::Pose>("uperPartPoseInRightEndEffectorFrame", 1000);
+	ros::Publisher lowerPartPoseInUpperPartFrame_pub = node.advertise<
+				geometry_msgs::Pose>("lowerPartPoseInUpperPartFrame", 1000);
 
 	tf::TransformListener listener;
-	tf::StampedTransform transformB2M8;
+
 	tf::StampedTransform transform0To8;
 	tf::StampedTransform transform1To8;
 	tf::StampedTransform transform2To8;
 	tf::StampedTransform transform3To8;
-	tf::StampedTransform transform;
+	tf::StampedTransform transform9To8;
+
 	std::vector<std::string> frames;
 	double cache0To8[Num] = { 0 };
 	double cache1To8[Num] = { 0 };
 	double cache2To8[Num] = { 0 };
 	double cache3To8[Num] = { 0 };
+	double cache9To8[Num] = { 0 };
 	double variance0To8 = 0;
 	double variance1To8 = 0;
 	double variance2To8 = 0;
 	double variance3To8 = 0;
+	double variance9To8 = 0;
 	double sum = 0;
 	double average = 0;
 	bool flag = false;
@@ -225,10 +243,13 @@ int main(int argc, char** argv) {
 	bool flag_pub1 = false;
 	bool flag_pub2 = false;
 	bool flag_pub3 = false;
+	bool flag_pub_UcLc = false;
 	bool marker_flag0 = false;
 	bool marker_flag1 = false;
 	bool marker_flag2 = false;
 	bool marker_flag3 = false;
+	bool marker_flag9 = false;
+	bool flag_lowerPart = false;
 
 	initialize();
 
@@ -294,6 +315,17 @@ int main(int argc, char** argv) {
 //								rate.sleep();
 //								continue;
 							}
+						} else if (subId == "ar_marker_9") {
+							flag_lowerPart = true;
+							try {
+								listener.lookupTransform("/ar_marker_8",
+										"/ar_marker_9", ros::Time(0),
+										transform9To8);
+								marker_flag9 = true;
+							} catch (tf::TransformException &ex) {
+								ROS_WARN("%s", ex.what());
+								marker_flag9 = false;
+							}
 						}
 					}
 
@@ -304,6 +336,11 @@ int main(int argc, char** argv) {
 							&& !marker_flag3) {
 						ROS_ERROR(
 								"I cannot localise the robot because I lost all the markers!");
+					}
+
+					if (!flag_lowerPart) {
+						ROS_ERROR("I cannot see the lower part!");
+//						continue;
 					}
 
 					//compute the transformation
@@ -331,11 +368,17 @@ int main(int argc, char** argv) {
 					} else {
 						ROS_WARN("I cannot see marker3!");
 					}
+					if (marker_flag9) {
+						computeVariance(variance9To8,
+								transform9To8.getOrigin().getX(), cache9To8);
+					} else {
+						ROS_WARN("I cannot see marker9!");
+					}
 
 					//Publish the relative tranformation between the end-effector and the object
 					if (variance0To8 == 0.05 && variance1To8 == 0.05
 							&& variance2To8 == 0.05 && variance3To8 == 0.05) {
-						ROS_ERROR("We lost all the  markers!");
+						ROS_ERROR("We lost all the  markers on the robot!");
 						continue;
 					}
 					if (marker_flag0) {
@@ -345,6 +388,7 @@ int main(int argc, char** argv) {
 						} else {
 							flag_pub0 = true;
 
+							//compute TCE
 							tf::Vector3 m0 = tf::Matrix3x3(
 									transform0To8.getRotation()).getColumn(0);
 							tf::Vector3 m1 = tf::Matrix3x3(
@@ -364,10 +408,9 @@ int main(int argc, char** argv) {
 							T8To0(1, 3) = transform0To8.getOrigin().getY();
 							T8To0(2, 3) = transform0To8.getOrigin().getZ();
 
-							TCToE_0 = T0ToE* T8To0 * TCTo8;
-							std::cout<<"TCToE_0 \n"<<TCToE_0<<std::endl;
-							
+							TCToE_0 = T0ToE * T8To0 * TCTo8;
 
+							//Convert transformation to ros msg
 							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
 							m00 = TCToE_0(0, 0);
 							m01 = TCToE_0(0, 1);
@@ -393,6 +436,7 @@ int main(int argc, char** argv) {
 							uperPartPoseInRightEndEffectorFrame.position.z =
 									TCToE_0(2, 3);
 
+							//Print out
 							std::cout
 									<< "The transformation from marker_0 to marker_8 in marker_0 frame: [x, y, z] "
 									<< transform0To8.getOrigin().getX() << ", "
@@ -593,10 +637,76 @@ int main(int argc, char** argv) {
 						}
 					}
 
-					if (marker_flag0 || marker_flag1 || marker_flag2
-							|| marker_flag3) {
+					if (marker_flag9) {
+						if (variance9To8 == 0.05) {
+							ROS_WARN("We lost marker_9 or marker_8!");
+						} else {
+
+							tf::Vector3 m0 = tf::Matrix3x3(
+									transform9To8.getRotation()).getColumn(0);
+							tf::Vector3 m1 = tf::Matrix3x3(
+									transform9To8.getRotation()).getColumn(1);
+							tf::Vector3 m2 = tf::Matrix3x3(
+									transform9To8.getRotation()).getColumn(2);
+							T9To8(0, 0) = m0.getX();
+							T9To8(1, 0) = m0.getY();
+							T9To8(2, 0) = m0.getZ();
+							T9To8(0, 1) = m1.getX();
+							T9To8(1, 1) = m1.getY();
+							T9To8(2, 1) = m1.getZ();
+							T9To8(0, 2) = m2.getX();
+							T9To8(1, 2) = m2.getY();
+							T9To8(2, 2) = m2.getZ();
+							T9To8(0, 3) = transform9To8.getOrigin().getX();
+							T9To8(1, 3) = transform9To8.getOrigin().getY();
+							T9To8(2, 3) = transform9To8.getOrigin().getZ();
+
+							TLcToUc = T9To8 * TLcTo9;
+
+							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
+							m00 = TLcToUc(0, 0);
+							m01 = TLcToUc(0, 1);
+							m02 = TLcToUc(0, 2);
+							m10 = TLcToUc(1, 0);
+							m11 = TLcToUc(1, 1);
+							m12 = TLcToUc(1, 2);
+							m20 = TLcToUc(2, 0);
+							m21 = TLcToUc(2, 1);
+							m22 = TLcToUc(2, 2);
+							tf::Quaternion quat;
+							tf::Matrix3x3(m00, m01, m02, m10, m11, m12, m20,
+									m21, m22).getRotation(quat);
+							geometry_msgs::Quaternion msgQuat;
+							tf::quaternionTFToMsg(quat, msgQuat);
+
+							lowerPartPoseInUpperPartFrame.orientation =
+									msgQuat;
+							lowerPartPoseInUpperPartFrame.position.x =
+									TLcToUc(0, 3);
+							lowerPartPoseInUpperPartFrame.position.y =
+									TLcToUc(1, 3);
+							lowerPartPoseInUpperPartFrame.position.z =
+									TLcToUc(2, 3);
+
+							std::cout
+									<< "The position of marker_9 in marker_8 frame: [x, y, z] "
+									<< transform9To8.getOrigin().getX() << ", "
+									<< transform9To8.getOrigin().getY() << ", "
+									<< transform9To8.getOrigin().getZ()
+									<< std::endl;
+							std::cout << "variance9To8: " << variance9To8
+									<< std::endl;
+						}
+					}
+
+					//publish ros msg
+					if (flag_pub0 || flag_pub1 || flag_pub2
+							|| flag_pub3) {
 						uperPartPoseInRightEndEffectorFrame_pub.publish(
 								uperPartPoseInRightEndEffectorFrame);
+					}
+					if(flag_pub_UcLc){
+						lowerPartPoseInUpperPartFrame_pub.publish(lowerPartPoseInUpperPartFrame);
 					}
 
 					if (marker_flag0 && marker_flag1) {
@@ -619,7 +729,7 @@ int main(int argc, char** argv) {
 				}
 			}
 			if (!flag) {
-				ROS_ERROR("I cannot see the object!");
+				ROS_ERROR("I cannot see the upper object!");
 				rate.sleep();
 				continue;
 			}
