@@ -26,7 +26,8 @@ catkin_make
 source devel/setup.bash
 roslaunch ar_marker_localization ar_maker_localization.launch
 ```
-* The upper object's pose with respect to the end-effector frame is published on ros topic `/upperPartPoseInRightEndEffectorFrame` with ``geometry_msgs/Pose`` message type.
+* The upper object's pose with respect to the right end-effector frame is published on ros topic `/upperPartPoseInRightEndEffectorFrame` with ``geometry_msgs/Pose`` message type.
+* The upper object's pose with respect to the left end-effector frame is published on ros topic `/upperPartPoseInLeftEndEffectorFrame` with ``geometry_msgs/Pose`` message type.
 * The lower object's pose with respect to the upper object's frame (locatated at the geometric centre) is published on ros topic `/lowerPartPoseInUpperPartFrame` with ``geometry_msgs/Pose`` message type.
 
 
