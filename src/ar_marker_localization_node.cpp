@@ -126,9 +126,9 @@ void initialize(bool & isBlackBox) {
 	T2.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
 			Eigen::Vector3d::UnitZ()).matrix();
 	//The plastic box
-	T3(0, 3) = -0.10;
-	T3(1, 3) = -0.0925;
-	T3(2, 3) = -0.0525;
+	T3(0, 3) = -0.0590;
+	T3(1, 3) = -0.0510;
+	T3(2, 3) = -0.0420;
 	TLcTo9 = T1 * T2 * T3;
 	std::cout << "TLcTo9\n" << TLcTo9 << std::endl;
 
@@ -668,8 +668,9 @@ int main(int argc, char** argv) {
 					if (marker_flag9) {
 						if (variance9To8 == 0.05) {
 							ROS_WARN("We lost marker_9 or marker_8!");
+							flag_pub_UcLc=false;
 						} else {
-
+							flag_pub_UcLc=true;
 							tf::Vector3 m0 = tf::Matrix3x3(
 									transform9To8.getRotation()).getColumn(0);
 							tf::Vector3 m1 = tf::Matrix3x3(
@@ -689,8 +690,8 @@ int main(int argc, char** argv) {
 							T9To8(1, 3) = transform9To8.getOrigin().getY();
 							T9To8(2, 3) = transform9To8.getOrigin().getZ();
 
-							TLcToUc = T9To8 * TLcTo9;
-
+							TLcToUc = TUcTo8.inverse() * T9To8 * TLcTo9;
+std::cout<<"TLcToUc\n"<<TLcToUc<<std::endl;
 							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
 							m00 = TLcToUc(0, 0);
 							m01 = TLcToUc(0, 1);
