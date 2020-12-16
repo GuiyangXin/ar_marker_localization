@@ -38,7 +38,7 @@ Eigen::Matrix4d TCToE_3;
 geometry_msgs::Pose uperPartPoseInRightEndEffectorFrame;
 geometry_msgs::Pose lowerPartPoseInUpperPartFrame;
 
-void initialize() {
+void initialize(bool & isBlackBox) {
 
 	T0ToE.setIdentity();
 	T1ToE.setIdentity();
@@ -59,6 +59,9 @@ void initialize() {
 	T0ToE = T1 * T2 * T3;
 	std::cout << "T0ToE\n" << T0ToE << std::endl;
 
+	T1.setIdentity();
+	T2.setIdentity();
+	T3.setIdentity();
 	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(-45 * PI / 180,
 			Eigen::Vector3d::UnitZ()).matrix();
 	T2.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
@@ -68,6 +71,9 @@ void initialize() {
 	T1ToE = T1 * T2 * T3;
 	std::cout << "T1ToE\n" << T1ToE << std::endl;
 
+	T1.setIdentity();
+	T2.setIdentity();
+	T3.setIdentity();
 	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(225 * PI / 180,
 			Eigen::Vector3d::UnitZ()).matrix();
 	T2.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
@@ -77,6 +83,9 @@ void initialize() {
 	T2ToE = T1 * T2 * T3;
 	std::cout << "T2ToE\n" << T2ToE << std::endl;
 
+	T1.setIdentity();
+	T2.setIdentity();
+	T3.setIdentity();
 	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(135 * PI / 180,
 			Eigen::Vector3d::UnitZ()).matrix();
 	T2.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
@@ -86,22 +95,31 @@ void initialize() {
 	T3ToE = T1 * T2 * T3;
 	std::cout << "T3ToE\n" << T3ToE << std::endl;
 
+	T1.setIdentity();
+	T2.setIdentity();
+	T3.setIdentity();
 	TUcTo8.setIdentity();
 	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
 			Eigen::Vector3d::UnitX()).matrix();
 	T2.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
 			Eigen::Vector3d::UnitZ()).matrix();
-	//The black box
-	T3(0, 3) = -0.10;
-	T3(1, 3) = -0.0925;
-	T3(2, 3) = -0.0525;
-	//The plastic box
-	T3(0, 3) = -0.118/2;
-	T3(1, 3) = -(0.157/2-0.055/2);
-	T3(2, 3) = -(0.139/2-0.055/2);
+	if (isBlackBox) {
+		//The black box
+		T3(0, 3) = -0.10;
+		T3(1, 3) = -0.0925;
+		T3(2, 3) = -0.0525;
+	} else {
+		//The plastic box
+		T3(0, 3) = -0.0590;
+		T3(1, 3) = -0.0510;
+		T3(2, 3) = -0.0420;
+	}
 	TUcTo8 = T1 * T2 * T3;
 	std::cout << "TUcTo8 \n" << TUcTo8 << std::endl;
 
+	T1.setIdentity();
+	T2.setIdentity();
+	T3.setIdentity();
 	TLcTo9.setIdentity();
 	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
 			Eigen::Vector3d::UnitX()).matrix();
@@ -221,7 +239,7 @@ int main(int argc, char** argv) {
 	ros::Publisher uperPartPoseInRightEndEffectorFrame_pub = node.advertise<
 			geometry_msgs::Pose>("uperPartPoseInRightEndEffectorFrame", 1000);
 	ros::Publisher lowerPartPoseInUpperPartFrame_pub = node.advertise<
-				geometry_msgs::Pose>("lowerPartPoseInUpperPartFrame", 1000);
+			geometry_msgs::Pose>("lowerPartPoseInUpperPartFrame", 1000);
 
 	tf::TransformListener listener;
 
@@ -258,10 +276,10 @@ int main(int argc, char** argv) {
 	bool marker_flag9 = false;
 	bool flag_lowerPart = false;
 
-	bool isBlackBox=false;
-	node.param<bool>("isBlackBox", isBlackBox, false);
-	std::cout<<"isBlackBox "<<isBlackBox<<std::endl;
-	initialize();
+	bool isBlackBox = false;
+	node.param<bool>(ros::this_node::getName() + "/isBlackBox", isBlackBox,
+			false);
+	initialize(isBlackBox);
 
 	ros::Rate rate(10.0);
 	while (node.ok()) {
@@ -689,14 +707,13 @@ int main(int argc, char** argv) {
 							geometry_msgs::Quaternion msgQuat;
 							tf::quaternionTFToMsg(quat, msgQuat);
 
-							lowerPartPoseInUpperPartFrame.orientation =
-									msgQuat;
-							lowerPartPoseInUpperPartFrame.position.x =
-									TLcToUc(0, 3);
-							lowerPartPoseInUpperPartFrame.position.y =
-									TLcToUc(1, 3);
-							lowerPartPoseInUpperPartFrame.position.z =
-									TLcToUc(2, 3);
+							lowerPartPoseInUpperPartFrame.orientation = msgQuat;
+							lowerPartPoseInUpperPartFrame.position.x = TLcToUc(
+									0, 3);
+							lowerPartPoseInUpperPartFrame.position.y = TLcToUc(
+									1, 3);
+							lowerPartPoseInUpperPartFrame.position.z = TLcToUc(
+									2, 3);
 
 							std::cout
 									<< "The position of marker_9 in marker_8 frame: [x, y, z] "
@@ -710,13 +727,13 @@ int main(int argc, char** argv) {
 					}
 
 					//publish ros msg
-					if (flag_pub0 || flag_pub1 || flag_pub2
-							|| flag_pub3) {
+					if (flag_pub0 || flag_pub1 || flag_pub2 || flag_pub3) {
 						uperPartPoseInRightEndEffectorFrame_pub.publish(
 								uperPartPoseInRightEndEffectorFrame);
 					}
-					if(flag_pub_UcLc){
-						lowerPartPoseInUpperPartFrame_pub.publish(lowerPartPoseInUpperPartFrame);
+					if (flag_pub_UcLc) {
+						lowerPartPoseInUpperPartFrame_pub.publish(
+								lowerPartPoseInUpperPartFrame);
 					}
 
 					if (marker_flag0 && marker_flag1) {
