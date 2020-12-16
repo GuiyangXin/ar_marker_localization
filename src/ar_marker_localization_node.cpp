@@ -691,7 +691,7 @@ int main(int argc, char** argv) {
 							T9To8(2, 3) = transform9To8.getOrigin().getZ();
 
 							TLcToUc = TUcTo8.inverse() * T9To8 * TLcTo9;
-std::cout<<"TLcToUc\n"<<TLcToUc<<std::endl;
+
 							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
 							m00 = TLcToUc(0, 0);
 							m01 = TLcToUc(0, 1);
