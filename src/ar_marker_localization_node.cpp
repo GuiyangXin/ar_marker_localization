@@ -564,7 +564,7 @@ int main(int argc, char** argv) {
 							T8To2(1, 3) = transform2To8.getOrigin().getY();
 							T8To2(2, 3) = transform2To8.getOrigin().getZ();
 
-							TCToE_2 = T1ToE * T8To2 * TUcTo8;
+							TCToE_2 = T2ToE * T8To2 * TUcTo8;
 
 							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
 							m00 = TCToE_2(0, 0);
@@ -627,7 +627,7 @@ int main(int argc, char** argv) {
 							T8To3(1, 3) = transform3To8.getOrigin().getY();
 							T8To3(2, 3) = transform3To8.getOrigin().getZ();
 
-							TCToE_3 = T1ToE * T8To3 * TUcTo8;
+							TCToE_3 = T3ToE * T8To3 * TUcTo8;
 
 							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
 							m00 = TCToE_3(0, 0);
