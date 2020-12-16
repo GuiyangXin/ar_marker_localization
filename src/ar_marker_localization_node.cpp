@@ -21,7 +21,7 @@ Eigen::Matrix4d T8To1;
 Eigen::Matrix4d T8To2;
 Eigen::Matrix4d T8To3;
 Eigen::Matrix4d T9To8;
-Eigen::Matrix4d TCTo8;
+Eigen::Matrix4d TUcTo8;
 Eigen::Matrix4d TLcTo9;
 Eigen::Matrix4d TLcToUc;
 
@@ -39,6 +39,7 @@ geometry_msgs::Pose uperPartPoseInRightEndEffectorFrame;
 geometry_msgs::Pose lowerPartPoseInUpperPartFrame;
 
 void initialize() {
+
 	T0ToE.setIdentity();
 	T1ToE.setIdentity();
 	T2ToE.setIdentity();
@@ -85,22 +86,28 @@ void initialize() {
 	T3ToE = T1 * T2 * T3;
 	std::cout << "T3ToE\n" << T3ToE << std::endl;
 
-	TCTo8.setIdentity();
+	TUcTo8.setIdentity();
 	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
 			Eigen::Vector3d::UnitX()).matrix();
 	T2.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
 			Eigen::Vector3d::UnitZ()).matrix();
+	//The black box
 	T3(0, 3) = -0.10;
 	T3(1, 3) = -0.0925;
 	T3(2, 3) = -0.0525;
-	TCTo8 = T1 * T2 * T3;
-	std::cout << "TCTo8\n" << TCTo8 << std::endl;
+	//The plastic box
+	T3(0, 3) = -0.118/2;
+	T3(1, 3) = -(0.157/2-0.055/2);
+	T3(2, 3) = -(0.139/2-0.055/2);
+	TUcTo8 = T1 * T2 * T3;
+	std::cout << "TUcTo8 \n" << TUcTo8 << std::endl;
 
 	TLcTo9.setIdentity();
 	T1.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
 			Eigen::Vector3d::UnitX()).matrix();
 	T2.block(0, 0, 3, 3) = Eigen::AngleAxisd(-90 * PI / 180,
 			Eigen::Vector3d::UnitZ()).matrix();
+	//The plastic box
 	T3(0, 3) = -0.10;
 	T3(1, 3) = -0.0925;
 	T3(2, 3) = -0.0525;
@@ -251,6 +258,9 @@ int main(int argc, char** argv) {
 	bool marker_flag9 = false;
 	bool flag_lowerPart = false;
 
+	bool isBlackBox=false;
+	node.param<bool>("isBlackBox", isBlackBox, false);
+	std::cout<<"isBlackBox "<<isBlackBox<<std::endl;
 	initialize();
 
 	ros::Rate rate(10.0);
@@ -408,7 +418,7 @@ int main(int argc, char** argv) {
 							T8To0(1, 3) = transform0To8.getOrigin().getY();
 							T8To0(2, 3) = transform0To8.getOrigin().getZ();
 
-							TCToE_0 = T0ToE * T8To0 * TCTo8;
+							TCToE_0 = T0ToE * T8To0 * TUcTo8;
 
 							//Convert transformation to ros msg
 							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
@@ -473,7 +483,7 @@ int main(int argc, char** argv) {
 							T8To1(1, 3) = transform1To8.getOrigin().getY();
 							T8To1(2, 3) = transform1To8.getOrigin().getZ();
 
-							TCToE_1 = T1ToE * T8To1 * TCTo8;
+							TCToE_1 = T1ToE * T8To1 * TUcTo8;
 
 							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
 							m00 = TCToE_1(0, 0);
@@ -536,7 +546,7 @@ int main(int argc, char** argv) {
 							T8To2(1, 3) = transform2To8.getOrigin().getY();
 							T8To2(2, 3) = transform2To8.getOrigin().getZ();
 
-							TCToE_2 = T1ToE * T8To2 * TCTo8;
+							TCToE_2 = T1ToE * T8To2 * TUcTo8;
 
 							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
 							m00 = TCToE_2(0, 0);
@@ -599,7 +609,7 @@ int main(int argc, char** argv) {
 							T8To3(1, 3) = transform3To8.getOrigin().getY();
 							T8To3(2, 3) = transform3To8.getOrigin().getZ();
 
-							TCToE_3 = T1ToE * T8To3 * TCTo8;
+							TCToE_3 = T1ToE * T8To3 * TUcTo8;
 
 							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
 							m00 = TCToE_3(0, 0);

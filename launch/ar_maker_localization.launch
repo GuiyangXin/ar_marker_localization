@@ -7,8 +7,9 @@
 	<arg name="filters"     default="pointcloud"/>
 	<arg name="max_new_marker_error"     default="0.005"/>
 	<arg name="max_track_error"     default="0.1"/>
+	<arg name="isBlackBox"     default="true"/>
+	
     <!-- camera tf Node-->
-
     <!--node name="camera_tf_broadcaster" pkg="ar_marker_localization" type="camera_tf_broadcaster.py" respawn="false" output="screen" >
       <param name="camera" type="string" value="realsense" />
     </node-->
@@ -23,7 +24,11 @@
         	<arg name="output_frame" value="$(arg marker_frame_id)" />
 	</include>
 
-	<node pkg="ar_marker_localization" type="ar_marker_localization_node" name="camera_tf" respawn="false" output="screen"/>
+	<!--node pkg="ar_marker_localization" type="ar_marker_localization_node" name="camera_tf" respawn="false" output="screen"/-->
+	
+	<node name="camera_tf" pkg="ar_marker_localization" type="ar_marker_localization_node" output="screen">
+  		<param name="isBlackBox" type="bool" value="$(arg isBlackBox)"/>
+	</node>
 
 	<include file="$(find realsense2_camera)/launch/rs_camera.launch">
         	<arg name="filters" value="$(arg filters)" />
