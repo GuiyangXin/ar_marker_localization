@@ -7,7 +7,7 @@
 	<arg name="filters"     default="pointcloud"/>
 	<arg name="max_new_marker_error"     default="0.005"/>
 	<arg name="max_track_error"     default="0.1"/>
-	<arg name="isBlackBox"     default="true"/>
+	<arg name="isBlackBox"     default="false"/>
 	
     <!-- camera tf Node-->
     <!--node name="camera_tf_broadcaster" pkg="ar_marker_localization" type="camera_tf_broadcaster.py" respawn="false" output="screen" >
