@@ -512,7 +512,7 @@ int main(int argc, char** argv) {
 
 					if (!flag_left_arm) {
 						ROS_ERROR("I cannot localise the left robot arm!");
-						continue;
+						//continue;
 					} else if (!marker_flag4 && !marker_flag5 && !marker_flag6
 							&& !marker_flag7) {
 						ROS_ERROR(
@@ -604,7 +604,7 @@ int main(int argc, char** argv) {
 							convertTFTransformationToHomogeneousTransformation(
 									T8To0, transform0To8);
 							TCToE_0 = T0ToE * T8To0 * TUcTo8;
-
+//std::cout<<"TCToE_0\n"<<TCToE_0<<std::endl;
 							//Convert transformation to ros msg
 							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
 							m00 = TCToE_0(0, 0);
