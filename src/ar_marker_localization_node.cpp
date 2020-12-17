@@ -6,6 +6,7 @@
 #include "tf/transform_datatypes.h"
 //#include "LinearMath/btMatrix3x3.h"
 #include <geometry_msgs/Twist.h>
+#include <visualization_msgs/Marker.h>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <geometry_msgs/Pose.h>
@@ -45,6 +46,18 @@ Eigen::Matrix4d TCToE_7;
 geometry_msgs::Pose upperPartPoseInRightEndEffectorFrame;
 geometry_msgs::Pose upperPartPoseInLeftEndEffectorFrame;
 geometry_msgs::Pose lowerPartPoseInUpperPartFrame;
+
+bool flag_pub0 = false;
+bool flag_pub1 = false;
+bool flag_pub2 = false;
+bool flag_pub3 = false;
+bool flag_pub4 = false;
+bool flag_pub5 = false;
+bool flag_pub6 = false;
+bool flag_pub7 = false;
+bool flag_pub_UcLc = false;
+bool mark8=false;
+bool mark9=false;
 
 void initialize(bool & isBlackBox) {
 
@@ -173,7 +186,7 @@ void initialize(bool & isBlackBox) {
 		//The plastic box
 		T3(0, 3) = -0.0590;
 //		T3(1, 3) = -0.0510;
-		T3(2, 3) = -0.0175;//-0.0420;
+		T3(2, 3) = -0.0175; //-0.0420;
 	}
 	TUcTo8 = T1 * T2 * T3;
 	std::cout << "TUcTo8 \n" << TUcTo8 << std::endl;
@@ -212,6 +225,48 @@ void initialize(bool & isBlackBox) {
 	TCToE_5.setIdentity();
 	TCToE_6.setIdentity();
 	TCToE_7.setIdentity();
+}
+
+void visualizationMarkerCallback(
+		const visualization_msgs::Marker::ConstPtr & msg) {
+//std::cout<<"id: "<<msg->id<<std::endl;
+	switch(msg->id){
+	case 0:
+		flag_pub0=true;
+		break;
+	case 1:
+		flag_pub1=true;
+		break;
+	case 2:
+		flag_pub2=true;
+		break;
+	case 3:
+		flag_pub3=true;
+		break;
+	case 4:
+		flag_pub4=true;
+		break;
+	case 5:
+		flag_pub5= true;
+		break;
+	case 6:
+		flag_pub6=true;
+		break;
+	case 7:
+		flag_pub7=true;
+		break;
+	case 8:
+		mark8=true;
+		break;
+	case 9:
+		mark9=true;
+		break;
+
+	}
+	if(mark8 && mark9){
+		flag_pub_UcLc = true;
+	}
+
 }
 
 Eigen::Matrix3d YPRtoRotationMatrix(Eigen::Vector3d & ypr) {
@@ -320,6 +375,9 @@ int main(int argc, char** argv) {
 	ros::Publisher lowerPartPoseInUpperPartFrame_pub = node.advertise<
 			geometry_msgs::Pose>("lowerPartPoseInUpperPartFrame", 1000);
 
+	ros::Subscriber visualizationMarkerSubscriber_ = node.subscribe(
+			"visualization_marker", 1000, visualizationMarkerCallback);
+
 	tf::TransformListener listener;
 
 	tf::StampedTransform transform0To8;
@@ -356,15 +414,15 @@ int main(int argc, char** argv) {
 	bool flag = false;
 	bool flag2 = false;
 	bool flag_left_arm = false;
-	bool flag_pub0 = false;
-	bool flag_pub1 = false;
-	bool flag_pub2 = false;
-	bool flag_pub3 = false;
-	bool flag_pub4 = false;
-	bool flag_pub5 = false;
-	bool flag_pub6 = false;
-	bool flag_pub7 = false;
-	bool flag_pub_UcLc = false;
+//	bool flag_pub0 = false;
+//	bool flag_pub1 = false;
+//	bool flag_pub2 = false;
+//	bool flag_pub3 = false;
+//	bool flag_pub4 = false;
+//	bool flag_pub5 = false;
+//	bool flag_pub6 = false;
+//	bool flag_pub7 = false;
+//	bool flag_pub_UcLc = false;
 	bool marker_flag0 = false;
 	bool marker_flag1 = false;
 	bool marker_flag2 = false;
@@ -383,7 +441,7 @@ int main(int argc, char** argv) {
 
 	ros::Rate rate(10.0);
 	while (node.ok()) {
-
+		ros::spinOnce();
 		listener.getFrameStrings(frames);
 		if (frames.size() != 0) {
 			for (auto id : frames) {
@@ -503,7 +561,7 @@ int main(int argc, char** argv) {
 
 					if (!flag2) {
 						ROS_ERROR("I cannot localise the right robot arm!");
-		//				continue;
+						//				continue;
 					} else if (!marker_flag0 && !marker_flag1 && !marker_flag2
 							&& !marker_flag3) {
 						ROS_ERROR(
@@ -585,7 +643,7 @@ int main(int argc, char** argv) {
 							&& variance2To8 == 0.05 && variance3To8 == 0.05) {
 						ROS_ERROR(
 								"We lost all the  markers on the right robot!");
-	//					continue;
+						//					continue;
 					}
 					if (variance8To4 == 0.05 && variance8To5 == 0.05
 							&& variance8To6 == 0.05 && variance8To7 == 0.05) {
@@ -598,9 +656,9 @@ int main(int argc, char** argv) {
 							ROS_WARN("We lost marker_0 or marker_8!");
 							flag_pub0 = false;
 						} else {
-							flag_pub0 = true;
+//							flag_pub0 = true;
 
-							//compute TCE
+//compute TCE
 							convertTFTransformationToHomogeneousTransformation(
 									T8To0, transform0To8);
 							TCToE_0 = T0ToE * T8To0 * TUcTo8;
@@ -632,14 +690,16 @@ int main(int argc, char** argv) {
 									TCToE_0(2, 3);
 
 							//Print out
-							std::cout
-									<< "The transformation from marker_0 to marker_8 in marker_0 frame: [x, y, z] "
-									<< transform0To8.getOrigin().getX() << ", "
-									<< transform0To8.getOrigin().getY() << ", "
-									<< transform0To8.getOrigin().getZ()
-									<< std::endl;
-							std::cout << "variance0To8: " << variance0To8
-									<< std::endl;
+//							if(flag_pub0){
+//							std::cout
+//									<< "The transformation from marker_0 to marker_8 in marker_0 frame: [x, y, z] "
+//									<< transform0To8.getOrigin().getX() << ", "
+//									<< transform0To8.getOrigin().getY() << ", "
+//									<< transform0To8.getOrigin().getZ()
+//									<< std::endl;
+//							std::cout << "variance0To8: " << variance0To8
+//									<< std::endl;
+//							}
 						}
 					}
 					if (marker_flag1) {
@@ -647,7 +707,7 @@ int main(int argc, char** argv) {
 							ROS_WARN("We lost marker_1 or marker_8!");
 							flag_pub1 = false;
 						} else {
-							flag_pub1 = true;
+//							flag_pub1 = true;
 							convertTFTransformationToHomogeneousTransformation(
 									T8To1, transform1To8);
 							TCToE_1 = T1ToE * T8To1 * TUcTo8;
@@ -676,15 +736,16 @@ int main(int argc, char** argv) {
 									TCToE_1(1, 3);
 							upperPartPoseInRightEndEffectorFrame.position.z =
 									TCToE_1(2, 3);
-
-							std::cout
-									<< "The transformation from marker_1 to marker_8 in marker_1 frame: [x, y, z] "
-									<< transform1To8.getOrigin().getX() << ", "
-									<< transform1To8.getOrigin().getY() << ", "
-									<< transform1To8.getOrigin().getZ()
-									<< std::endl;
-							std::cout << "variance1To8: " << variance1To8
-									<< std::endl;
+//							if(flag_pub1){
+//							std::cout
+//									<< "The transformation from marker_1 to marker_8 in marker_1 frame: [x, y, z] "
+//									<< transform1To8.getOrigin().getX() << ", "
+//									<< transform1To8.getOrigin().getY() << ", "
+//									<< transform1To8.getOrigin().getZ()
+//									<< std::endl;
+//							std::cout << "variance1To8: " << variance1To8
+//									<< std::endl;
+//							}
 						}
 					}
 					if (marker_flag2) {
@@ -692,7 +753,7 @@ int main(int argc, char** argv) {
 							ROS_WARN("We lost marker_2 or marker_8!");
 							flag_pub2 = false;
 						} else {
-							flag_pub2 = true;
+//							flag_pub2 = true;
 							convertTFTransformationToHomogeneousTransformation(
 									T8To2, transform2To8);
 							TCToE_2 = T2ToE * T8To2 * TUcTo8;
@@ -721,15 +782,16 @@ int main(int argc, char** argv) {
 									TCToE_2(1, 3);
 							upperPartPoseInRightEndEffectorFrame.position.z =
 									TCToE_2(2, 3);
-
-							std::cout
-									<< "The transformation from marker_2 to marker_8 in marker_2 frame: [x, y, z] "
-									<< transform2To8.getOrigin().getX() << ", "
-									<< transform2To8.getOrigin().getY() << ", "
-									<< transform2To8.getOrigin().getZ()
-									<< std::endl;
-							std::cout << "variance2To8: " << variance2To8
-									<< std::endl;
+//							if(flag_pub2){
+//							std::cout
+//									<< "The transformation from marker_2 to marker_8 in marker_2 frame: [x, y, z] "
+//									<< transform2To8.getOrigin().getX() << ", "
+//									<< transform2To8.getOrigin().getY() << ", "
+//									<< transform2To8.getOrigin().getZ()
+//									<< std::endl;
+//							std::cout << "variance2To8: " << variance2To8
+//									<< std::endl;
+//							}
 						}
 					}
 					if (marker_flag3) {
@@ -737,7 +799,7 @@ int main(int argc, char** argv) {
 							ROS_WARN("We lost marker_3 or marker_8!");
 							flag_pub3 = false;
 						} else {
-							flag_pub3 = true;
+//							flag_pub3 = true;
 							convertTFTransformationToHomogeneousTransformation(
 									T8To3, transform3To8);
 							TCToE_3 = T3ToE * T8To3 * TUcTo8;
@@ -766,15 +828,16 @@ int main(int argc, char** argv) {
 									TCToE_3(1, 3);
 							upperPartPoseInRightEndEffectorFrame.position.z =
 									TCToE_3(2, 3);
-
-							std::cout
-									<< "The transformation from marker_3 to marker_8 in marker_3 frame: [x, y, z] "
-									<< transform3To8.getOrigin().getX() << ", "
-									<< transform3To8.getOrigin().getY() << ", "
-									<< transform3To8.getOrigin().getZ()
-									<< std::endl;
-							std::cout << "variance3To8: " << variance3To8
-									<< std::endl;
+//							if(flag_pub3){
+//							std::cout
+//									<< "The transformation from marker_3 to marker_8 in marker_3 frame: [x, y, z] "
+//									<< transform3To8.getOrigin().getX() << ", "
+//									<< transform3To8.getOrigin().getY() << ", "
+//									<< transform3To8.getOrigin().getZ()
+//									<< std::endl;
+//							std::cout << "variance3To8: " << variance3To8
+//									<< std::endl;
+//							}
 						}
 					}
 					if (marker_flag4) {
@@ -813,14 +876,14 @@ int main(int argc, char** argv) {
 							upperPartPoseInLeftEndEffectorFrame.position.z =
 									TCToE_4(2, 3);
 
-							std::cout
-									<< "The transformation from marker_4 to marker_8 in marker_4 frame: [x, y, z] "
-									<< transform8To4.getOrigin().getX() << ", "
-									<< transform8To4.getOrigin().getY() << ", "
-									<< transform8To4.getOrigin().getZ()
-									<< std::endl;
-							std::cout << "variance8To4: " << variance8To4
-									<< std::endl;
+//							std::cout
+//									<< "The transformation from marker_4 to marker_8 in marker_4 frame: [x, y, z] "
+//									<< transform8To4.getOrigin().getX() << ", "
+//									<< transform8To4.getOrigin().getY() << ", "
+//									<< transform8To4.getOrigin().getZ()
+//									<< std::endl;
+//							std::cout << "variance8To4: " << variance8To4
+//									<< std::endl;
 						}
 					}
 					if (marker_flag5) {
@@ -859,14 +922,14 @@ int main(int argc, char** argv) {
 							upperPartPoseInLeftEndEffectorFrame.position.z =
 									TCToE_5(2, 3);
 
-							std::cout
-									<< "The transformation from marker_5 to marker_8 in marker_5 frame: [x, y, z] "
-									<< transform8To5.getOrigin().getX() << ", "
-									<< transform8To5.getOrigin().getY() << ", "
-									<< transform8To5.getOrigin().getZ()
-									<< std::endl;
-							std::cout << "variance8To5: " << variance8To5
-									<< std::endl;
+//							std::cout
+//									<< "The transformation from marker_5 to marker_8 in marker_5 frame: [x, y, z] "
+//									<< transform8To5.getOrigin().getX() << ", "
+//									<< transform8To5.getOrigin().getY() << ", "
+//									<< transform8To5.getOrigin().getZ()
+//									<< std::endl;
+//							std::cout << "variance8To5: " << variance8To5
+//									<< std::endl;
 						}
 					}
 					if (marker_flag6) {
@@ -905,14 +968,14 @@ int main(int argc, char** argv) {
 							upperPartPoseInLeftEndEffectorFrame.position.z =
 									TCToE_6(2, 3);
 
-							std::cout
-									<< "The transformation from marker_6 to marker_8 in marker_6 frame: [x, y, z] "
-									<< transform8To6.getOrigin().getX() << ", "
-									<< transform8To6.getOrigin().getY() << ", "
-									<< transform8To6.getOrigin().getZ()
-									<< std::endl;
-							std::cout << "variance8To6: " << variance8To6
-									<< std::endl;
+//							std::cout
+//									<< "The transformation from marker_6 to marker_8 in marker_6 frame: [x, y, z] "
+//									<< transform8To6.getOrigin().getX() << ", "
+//									<< transform8To6.getOrigin().getY() << ", "
+//									<< transform8To6.getOrigin().getZ()
+//									<< std::endl;
+//							std::cout << "variance8To6: " << variance8To6
+//									<< std::endl;
 						}
 					}
 					if (marker_flag7) {
@@ -950,15 +1013,15 @@ int main(int argc, char** argv) {
 									TCToE_7(1, 3);
 							upperPartPoseInLeftEndEffectorFrame.position.z =
 									TCToE_7(2, 3);
-
-							std::cout
-									<< "The transformation from marker_7 to marker_8 in marker_7 frame: [x, y, z] "
-									<< transform8To7.getOrigin().getX() << ", "
-									<< transform8To7.getOrigin().getY() << ", "
-									<< transform8To7.getOrigin().getZ()
-									<< std::endl;
-							std::cout << "variance8To7: " << variance8To7
-									<< std::endl;
+//
+//							std::cout
+//									<< "The transformation from marker_7 to marker_8 in marker_7 frame: [x, y, z] "
+//									<< transform8To7.getOrigin().getX() << ", "
+//									<< transform8To7.getOrigin().getY() << ", "
+//									<< transform8To7.getOrigin().getZ()
+//									<< std::endl;
+//							std::cout << "variance8To7: " << variance8To7
+//									<< std::endl;
 						}
 					}
 
@@ -967,7 +1030,7 @@ int main(int argc, char** argv) {
 							ROS_WARN("We lost marker_9 or marker_8!");
 							flag_pub_UcLc = false;
 						} else {
-							flag_pub_UcLc = true;
+//							flag_pub_UcLc = true;
 							tf::Vector3 m0 = tf::Matrix3x3(
 									transform9To8.getRotation()).getColumn(0);
 							tf::Vector3 m1 = tf::Matrix3x3(
@@ -1013,6 +1076,7 @@ int main(int argc, char** argv) {
 							lowerPartPoseInUpperPartFrame.position.z = TLcToUc(
 									2, 3);
 
+							if(flag_pub_UcLc){
 							std::cout
 									<< "The position of marker_9 in marker_8 frame: [x, y, z] "
 									<< transform9To8.getOrigin().getX() << ", "
@@ -1021,10 +1085,11 @@ int main(int argc, char** argv) {
 									<< std::endl;
 							std::cout << "variance9To8: " << variance9To8
 									<< std::endl;
+							}
 						}
 					}
-
 					//publish ros msg
+
 					if (flag_pub0 || flag_pub1 || flag_pub2 || flag_pub3) {
 						upperPartPoseInRightEndEffectorFrame_pub.publish(
 								upperPartPoseInRightEndEffectorFrame);
@@ -1079,7 +1144,18 @@ int main(int argc, char** argv) {
 				continue;
 			}
 		}
-
+//		ros::spinOnce();
+		flag_pub0 = false;
+		flag_pub1 = false;
+		flag_pub2 = false;
+		flag_pub3 = false;
+		flag_pub4 = false;
+		flag_pub5 = false;
+		flag_pub6 = false;
+		flag_pub7 = false;
+		flag_pub_UcLc = false;
+		mark8=false;
+		mark9=false;
 		rate.sleep();
 	}
 	return 0;
