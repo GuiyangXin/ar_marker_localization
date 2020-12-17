@@ -459,8 +459,6 @@ int main(int argc, char** argv) {
 							} catch (tf::TransformException &ex) {
 								ROS_WARN("%s", ex.what());
 								marker_flag0 = false;
-//								rate.sleep();
-//								continue;
 							}
 						} else if (subId == "ar_marker_1") {
 							flag2 = true;
@@ -472,8 +470,6 @@ int main(int argc, char** argv) {
 							} catch (tf::TransformException &ex) {
 								ROS_WARN("%s", ex.what());
 								marker_flag1 = false;
-//								rate.sleep();
-//								continue;
 							}
 						} else if (subId == "ar_marker_2") {
 							flag2 = true;
@@ -485,8 +481,6 @@ int main(int argc, char** argv) {
 							} catch (tf::TransformException &ex) {
 								ROS_WARN("%s", ex.what());
 								marker_flag2 = false;
-//								rate.sleep();
-//								continue;
 							}
 						} else if (subId == "ar_marker_3") {
 							flag2 = true;
@@ -498,8 +492,6 @@ int main(int argc, char** argv) {
 							} catch (tf::TransformException &ex) {
 								ROS_WARN("%s", ex.what());
 								marker_flag3 = false;
-//								rate.sleep();
-//								continue;
 							}
 						} else if (subId == "ar_marker_4") {
 							flag_left_arm = true;
@@ -561,11 +553,12 @@ int main(int argc, char** argv) {
 
 					if (!flag2) {
 						ROS_ERROR("I cannot localise the right robot arm!");
-						//				continue;
+						continue;
 					} else if (!marker_flag0 && !marker_flag1 && !marker_flag2
 							&& !marker_flag3) {
 						ROS_ERROR(
 								"I cannot localise the right robot arm because I lost all the markers!");
+						continue;
 					}
 
 					if (!flag_left_arm) {
