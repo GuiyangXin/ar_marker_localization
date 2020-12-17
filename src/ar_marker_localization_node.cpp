@@ -1076,15 +1076,15 @@ int main(int argc, char** argv) {
 							lowerPartPoseInUpperPartFrame.position.z = TLcToUc(
 									2, 3);
 
-							if(flag_pub_UcLc){
-							std::cout
-									<< "The position of marker_9 in marker_8 frame: [x, y, z] "
-									<< transform9To8.getOrigin().getX() << ", "
-									<< transform9To8.getOrigin().getY() << ", "
-									<< transform9To8.getOrigin().getZ()
-									<< std::endl;
-							std::cout << "variance9To8: " << variance9To8
-									<< std::endl;
+//							if(flag_pub_UcLc){
+//							std::cout
+//									<< "The position of marker_9 in marker_8 frame: [x, y, z] "
+//									<< transform9To8.getOrigin().getX() << ", "
+//									<< transform9To8.getOrigin().getY() << ", "
+//									<< transform9To8.getOrigin().getZ()
+//									<< std::endl;
+//							std::cout << "variance9To8: " << variance9To8
+//									<< std::endl;
 							}
 						}
 					}
