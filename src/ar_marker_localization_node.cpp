@@ -591,7 +591,7 @@ int main(int argc, char** argv) {
 							&& variance8To6 == 0.05 && variance8To7 == 0.05) {
 						ROS_ERROR(
 								"We lost all the  markers on the left robot!");
-						continue;
+//						continue;
 					}
 					if (marker_flag0) {
 						if (variance0To8 == 0.05) {
