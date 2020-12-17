@@ -441,7 +441,7 @@ int main(int argc, char** argv) {
 
 	ros::Rate rate(10.0);
 	while (node.ok()) {
-		ros::spinOnce();
+//		ros::spinOnce();
 		listener.getFrameStrings(frames);
 		if (frames.size() != 0) {
 			for (auto id : frames) {
@@ -654,15 +654,15 @@ int main(int argc, char** argv) {
 					if (marker_flag0) {
 						if (variance0To8 == 0.05) {
 							ROS_WARN("We lost marker_0 or marker_8!");
-							flag_pub0 = false;
+//							flag_pub0 = false;
 						} else {
 //							flag_pub0 = true;
 
-//compute TCE
+							//compute TCE
 							convertTFTransformationToHomogeneousTransformation(
 									T8To0, transform0To8);
 							TCToE_0 = T0ToE * T8To0 * TUcTo8;
-//std::cout<<"TCToE_0\n"<<TCToE_0<<std::endl;
+
 							//Convert transformation to ros msg
 							double m00, m01, m02, m10, m11, m12, m20, m21, m22;
 							m00 = TCToE_0(0, 0);
@@ -705,7 +705,7 @@ int main(int argc, char** argv) {
 					if (marker_flag1) {
 						if (variance1To8 == 0.05) {
 							ROS_WARN("We lost marker_1 or marker_8!");
-							flag_pub1 = false;
+//							flag_pub1 = false;
 						} else {
 //							flag_pub1 = true;
 							convertTFTransformationToHomogeneousTransformation(
@@ -751,7 +751,7 @@ int main(int argc, char** argv) {
 					if (marker_flag2) {
 						if (variance2To8 == 0.05) {
 							ROS_WARN("We lost marker_2 or marker_8!");
-							flag_pub2 = false;
+//							flag_pub2 = false;
 						} else {
 //							flag_pub2 = true;
 							convertTFTransformationToHomogeneousTransformation(
@@ -797,7 +797,7 @@ int main(int argc, char** argv) {
 					if (marker_flag3) {
 						if (variance3To8 == 0.05) {
 							ROS_WARN("We lost marker_3 or marker_8!");
-							flag_pub3 = false;
+//							flag_pub3 = false;
 						} else {
 //							flag_pub3 = true;
 							convertTFTransformationToHomogeneousTransformation(
@@ -1028,7 +1028,7 @@ int main(int argc, char** argv) {
 					if (marker_flag9) {
 						if (variance9To8 == 0.05) {
 							ROS_WARN("We lost marker_9 or marker_8!");
-							flag_pub_UcLc = false;
+//							flag_pub_UcLc = false;
 						} else {
 //							flag_pub_UcLc = true;
 							tf::Vector3 m0 = tf::Matrix3x3(
@@ -1089,10 +1089,11 @@ int main(int argc, char** argv) {
 						}
 					}
 					//publish ros msg
-
+					if(mark8){
 					if (flag_pub0 || flag_pub1 || flag_pub2 || flag_pub3) {
 						upperPartPoseInRightEndEffectorFrame_pub.publish(
 								upperPartPoseInRightEndEffectorFrame);
+					}
 					}
 //					if (flag_pub4 || flag_pub5 || flag_pub6 || flag_pub7) {
 //						upperPartPoseInLeftEndEffectorFrame_pub.publish(
@@ -1102,6 +1103,17 @@ int main(int argc, char** argv) {
 						lowerPartPoseInUpperPartFrame_pub.publish(
 								lowerPartPoseInUpperPartFrame);
 					}
+					flag_pub0 = false;
+					flag_pub1 = false;
+					flag_pub2 = false;
+					flag_pub3 = false;
+					flag_pub4 = false;
+					flag_pub5 = false;
+					flag_pub6 = false;
+					flag_pub7 = false;
+					flag_pub_UcLc = false;
+					mark8=false;
+					mark9=false;
 
 					if (marker_flag0 && marker_flag1) {
 						ROS_ERROR(
@@ -1144,18 +1156,7 @@ int main(int argc, char** argv) {
 				continue;
 			}
 		}
-//		ros::spinOnce();
-		flag_pub0 = false;
-		flag_pub1 = false;
-		flag_pub2 = false;
-		flag_pub3 = false;
-		flag_pub4 = false;
-		flag_pub5 = false;
-		flag_pub6 = false;
-		flag_pub7 = false;
-		flag_pub_UcLc = false;
-		mark8=false;
-		mark9=false;
+		ros::spinOnce();
 		rate.sleep();
 	}
 	return 0;
