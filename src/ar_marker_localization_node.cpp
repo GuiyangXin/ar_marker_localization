@@ -172,8 +172,8 @@ void initialize(bool & isBlackBox) {
 	} else {
 		//The plastic box
 		T3(0, 3) = -0.0590;
-		T3(1, 3) = -0.0510;
-		T3(2, 3) = -0.0420;
+//		T3(1, 3) = -0.0510;
+		T3(2, 3) = -0.0175;//-0.0420;
 	}
 	TUcTo8 = T1 * T2 * T3;
 	std::cout << "TUcTo8 \n" << TUcTo8 << std::endl;
@@ -188,7 +188,7 @@ void initialize(bool & isBlackBox) {
 			Eigen::Vector3d::UnitZ()).matrix();
 	//The plastic box
 	T3(0, 3) = -0.0590;
-	T3(1, 3) = -0.0510;
+//	T3(1, 3) = -0.0510;
 	T3(2, 3) = -0.0420;
 	TLcTo9 = T1 * T2 * T3;
 	std::cout << "TLcTo9\n" << TLcTo9 << std::endl;
@@ -503,7 +503,7 @@ int main(int argc, char** argv) {
 
 					if (!flag2) {
 						ROS_ERROR("I cannot localise the right robot arm!");
-						continue;
+		//				continue;
 					} else if (!marker_flag0 && !marker_flag1 && !marker_flag2
 							&& !marker_flag3) {
 						ROS_ERROR(
@@ -585,13 +585,13 @@ int main(int argc, char** argv) {
 							&& variance2To8 == 0.05 && variance3To8 == 0.05) {
 						ROS_ERROR(
 								"We lost all the  markers on the right robot!");
-						continue;
+	//					continue;
 					}
 					if (variance8To4 == 0.05 && variance8To5 == 0.05
 							&& variance8To6 == 0.05 && variance8To7 == 0.05) {
 						ROS_ERROR(
 								"We lost all the  markers on the left robot!");
-						continue;
+		//				continue;
 					}
 					if (marker_flag0) {
 						if (variance0To8 == 0.05) {
