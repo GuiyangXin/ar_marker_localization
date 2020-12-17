@@ -1085,7 +1085,7 @@ int main(int argc, char** argv) {
 //									<< std::endl;
 //							std::cout << "variance9To8: " << variance9To8
 //									<< std::endl;
-							}
+//							}
 						}
 					}
 					//publish ros msg
