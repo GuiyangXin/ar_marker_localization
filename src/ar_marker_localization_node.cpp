@@ -59,7 +59,7 @@ bool flag_pub_UcLc = false;
 bool mark8=false;
 bool mark9=false;
 
-void initialize(bool & isBlackBox) {
+void initialize(bool & isBlackBox, double & markerSize) {
 
 	T0ToE.setIdentity();
 	T1ToE.setIdentity();
@@ -186,7 +186,14 @@ void initialize(bool & isBlackBox) {
 		//The plastic box
 		T3(0, 3) = -0.0590;
 //		T3(1, 3) = -0.0510;
-		T3(2, 3) = -0.0175; //-0.0420;
+		if(markerSize==4.1){
+			T3(2, 3) = -0.0175; //-0.0420;
+		}else if(markerSize==12.5){
+			T3(2, 3) =0;
+		}else{
+			ROS_ERROR("It is not a valid markerSize! Currently only support 4.1 cm or 12.5 cm");
+			exit(0);
+		}
 	}
 	TUcTo8 = T1 * T2 * T3;
 	std::cout << "TUcTo8 \n" << TUcTo8 << std::endl;
@@ -202,7 +209,14 @@ void initialize(bool & isBlackBox) {
 	//The plastic box
 	T3(0, 3) = -0.0590;
 //	T3(1, 3) = -0.0510;
-	T3(2, 3) = -0.0420;
+	if(markerSize==4.1){
+		T3(2, 3) = -0.0420;
+	}else if(markerSize==12.5){
+		T3(2, 3) = 0;
+	}else{
+			ROS_ERROR("It is not a valid markerSize! Currently only support 4.1 cm or 12.5 cm");
+			exit(0);
+	}
 	TLcTo9 = T1 * T2 * T3;
 	std::cout << "TLcTo9\n" << TLcTo9 << std::endl;
 
@@ -435,9 +449,13 @@ int main(int argc, char** argv) {
 	bool flag_lowerPart = false;
 
 	bool isBlackBox = false;
+	double markerSize=4.1;
 	node.param<bool>(ros::this_node::getName() + "/isBlackBox", isBlackBox,
 			false);
-	initialize(isBlackBox);
+	node.param<double>(ros::this_node::getName() + "/user_marker_size", markerSize,
+			4.1);
+
+	initialize(isBlackBox, markerSize);
 
 	ros::Rate rate(10.0);
 	while (node.ok()) {

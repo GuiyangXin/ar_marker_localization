@@ -28,6 +28,7 @@
 	
 	<node name="camera_tf" pkg="ar_marker_localization" type="ar_marker_localization_node" output="screen">
   		<param name="isBlackBox" type="bool" value="$(arg isBlackBox)"/>
+  		<param name="user_marker_size" type="double" value="$(arg user_marker_size)"/>
 	</node>
 
 	<include file="$(find realsense2_camera)/launch/rs_camera.launch">
